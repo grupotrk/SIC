@@ -1,0 +1,1513 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trikode Ingeniería - Demo Sistema</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --trikode-blue: #15345f;
+            --trikode-green: #98ce4f;
+            --trikode-cyan: #33d3e7;
+            --trikode-dark: #0b1730;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--trikode-blue) 0%, var(--trikode-dark) 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--trikode-green), var(--trikode-cyan));
+            color: #0b1730;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(51, 211, 231, 0.28);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(51, 211, 231, 0.45);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(51, 211, 231, 0.22);
+        }
+        
+        .product-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(51, 211, 231, 0.22);
+        }
+        
+        .sidebar-item {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(152, 206, 79, 0.12);
+            border-left: 3px solid var(--trikode-green);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(152, 206, 79, 0.2);
+            border-left: 3px solid var(--trikode-green);
+        }
+
+        .brand-logo {
+            display: block;
+            width: 220px;
+            max-width: 48vw;
+            height: auto;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .demo-banner {
+            background: var(--trikode-green);
+            color: #000;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .demo-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .demo-legal-disclaimer {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+        }
+        
+        .demo-disabled:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .venta-splash-enter {
+            animation: ventaSplashFade 2.9s ease forwards;
+        }
+
+        .venta-splash-amount {
+            animation: ventaSplashPulse 0.7s ease-in-out 2;
+        }
+
+        @keyframes ventaSplashFade {
+            0% { opacity: 0; transform: scale(0.95); }
+            20% { opacity: 1; transform: scale(1); }
+            86% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.03); }
+        }
+
+        @keyframes ventaSplashPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo Banner -->
+    <div class="demo-banner">
+        <i class="fas fa-display mr-2"></i>ESTÁS EN MODO DEMOSTRACIÓN - Los datos son simulados
+    </div>
+
+    <!-- Header -->
+    <header class="glass sticky top-8 z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img
+                    src="/trikode-logo.png?v=20260319"
+                    alt="Trikode Ingenieria"
+                    class="brand-logo"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                >
+                <div class="text-3xl font-black" style="color: var(--trikode-green); display:none;">TRIKODE</div>
+                <div class="text-gray-300 text-sm">Demo Sistema de Control Interno</div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-sm text-gray-300">
+                    <i class="fas fa-store mr-2"></i>
+                    <span id="comercio-nombre">Kiosco Demo</span>
+                </div>
+                <div class="text-sm text-gray-300">
+                    <i class="fas fa-tag mr-2"></i>
+                    <span id="comercio-rubro">Kiosco</span>
+                </div>
+                <a id="header-real-cta" href="/activar" class="btn-primary">
+                    <i class="fas fa-arrow-right mr-2"></i><span id="header-cta-text">Registrar comercio y activar SIC</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Legal Disclaimer Banner -->
+    <div class="demo-legal-disclaimer mx-6 mt-4">
+        <div class="flex items-start space-x-3">
+            <i class="fas fa-shield-alt text-gray-400 text-lg mt-1"></i>
+            <div class="flex-1">
+                <h4 class="text-sm font-semibold text-gray-300 mb-2">
+                    Información Legal Importante
+                </h4>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    <strong>SIC significa Sistema Interno de Control.</strong> Este software te ayuda a ordenar ventas, stock, caja y operación comercial,
+                    pero <strong>no realiza facturación electrónica ni rinde información automáticamente a ARCA/AFIP</strong>. La contabilidad y las obligaciones fiscales
+                    siguen siendo responsabilidad exclusiva del comercio, usando la información de SIC como apoyo para tener panorama claro de lo que luego corresponda declarar o rendir.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="flex h-screen pt-44">
+        <!-- Sidebar -->
+        <aside class="w-64 glass p-4 slide-in" style="overflow-y:auto;">
+            <nav class="space-y-2">
+                <div class="sidebar-item active p-3 rounded-lg cursor-pointer" onclick="showDashboard()">
+                    <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+                </div>
+                <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showVentas()">
+                    <i class="fas fa-shopping-cart mr-3"></i>Punto de Venta (POS)
+                </div>
+                <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showProductos()">
+                    <i class="fas fa-box mr-3"></i>Productos
+                </div>
+                <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showStock()">
+                    <i class="fas fa-warehouse mr-3"></i>Stock
+                </div>
+                <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showTurnos()">
+                    <i class="fas fa-user-clock mr-3"></i>Turnos
+                </div>
+                <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showReportes()">
+                    <i class="fas fa-chart-bar mr-3"></i>Reportes
+                </div>
+                <div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showEmpleados()">
+                    <i class="fas fa-users mr-3"></i>Empleados
+                </div>
+            </nav>
+            
+            <!-- Quick Actions -->
+            <div class="mt-8 p-4 glass rounded-lg">
+                <h3 class="font-bold mb-3" style="color: var(--trikode-green);">Acciones Rápidas</h3>
+                <div class="space-y-2">
+                    <button onclick="nuevaVenta()" class="btn-primary w-full text-sm">
+                        <i class="fas fa-plus mr-2"></i>Nueva Venta
+                    </button>
+                    <button onclick="ingresoStock()" class="btn-secondary w-full text-sm">
+                        <i class="fas fa-plus mr-2"></i>Ingreso Stock
+                    </button>
+                </div>
+            </div>
+
+            <!-- CTA Suscripción -->
+            <div class="mt-6 p-4 rounded-xl" style="background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,255,136,0.05)); border: 1px solid rgba(0,255,136,0.4);">
+                <div class="text-xs font-bold mb-1" style="color: var(--trikode-green);">¡ACTIVÁ TU COMERCIO!</div>
+                <p class="text-xs text-gray-300 mb-3">Todo lo que ves funciona en tiempo real. Activá tu suscripción y empezá hoy.</p>
+                <p class="text-xs font-bold mb-3" style="color: var(--trikode-green);">Plan Trikode Completo: $40.000 ARS/mes</p>
+                <a href="/activar" class="block text-center text-xs font-bold py-2 px-3 rounded-lg" style="background: var(--trikode-green); color: #000;">
+                    Ver planes →
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- Dashboard View -->
+            <div id="dashboard-view" class="fade-in">
+                <div class="mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-1">Dashboard</h1>
+                        <p class="text-gray-400 text-sm">Hoy · <span id="fecha-hoy"></span> · <span class="text-green-400 font-semibold">En vivo (Demo)</span></p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="showVentas()" class="btn-primary text-sm">
+                            <i class="fas fa-cash-register mr-2"></i>Simular venta ahora
+                        </button>
+                        <button onclick="showDemoModal('cierre')" class="btn-secondary text-sm">
+                            <i class="fas fa-cash-register mr-2"></i>Cierre del día
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="glass p-5 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-2xl text-emerald-300"><i class="fas fa-wallet"></i></div>
+                            <div class="text-xs font-bold px-2 py-1 rounded-full bg-green-900 text-green-400">+18.3%</div>
+                        </div>
+                        <div class="text-2xl font-black" id="stat-mes">$3.842.180</div>
+                        <div class="text-xs text-gray-400 mt-1">Ventas del mes</div>
+                    </div>
+                    <div class="glass p-5 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-2xl text-sky-300"><i class="fas fa-cart-shopping"></i></div>
+                            <div class="text-xs font-bold px-2 py-1 rounded-full bg-green-900 text-green-400" id="stat-hoy-pct">+12.5%</div>
+                        </div>
+                        <div class="text-2xl font-black" id="stat-hoy">$299.900</div>
+                        <div class="text-xs text-gray-400 mt-1">Ventas de hoy · <span id="stat-cant-hoy">79</span> tickets</div>
+                    </div>
+                    <div class="glass p-5 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-2xl text-amber-300"><i class="fas fa-box-open"></i></div>
+                            <div class="text-xs font-bold px-2 py-1 rounded-full bg-yellow-900 text-yellow-400">-5.2%</div>
+                        </div>
+                        <div class="text-2xl font-black">1.248</div>
+                        <div class="text-xs text-gray-400 mt-1">Unidades en stock</div>
+                    </div>
+                    <div class="glass p-5 rounded-xl border border-red-800">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-2xl text-red-400"><i class="fas fa-triangle-exclamation"></i></div>
+                            <div class="text-xs font-bold px-2 py-1 rounded-full bg-red-900 text-red-400">+2 hoy</div>
+                        </div>
+                        <div class="text-2xl font-black text-red-400">6</div>
+                        <div class="text-xs text-gray-400 mt-1">Productos con stock bajo</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Gráfico de ventas por hora -->
+                    <div class="glass p-6 rounded-xl lg:col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">Ventas por hora — Hoy</h2>
+                            <div class="text-xs text-gray-400">Actualización en vivo (Demo)</div>
+                        </div>
+                        <canvas id="grafico-horas" height="120"></canvas>
+                    </div>
+
+                    <!-- Métodos de pago -->
+                    <div class="glass p-6 rounded-xl">
+                        <h2 class="text-lg font-bold mb-4">Métodos de pago</h2>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span>Efectivo</span><span class="font-bold">$135.200</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full" style="width:45%; background: var(--trikode-green);"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span>Mercado Pago</span><span class="font-bold">$67.220</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full bg-blue-400" style="width:22%;"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span>Tarjeta</span><span class="font-bold">$60.500</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full bg-yellow-400" style="width:20%;"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1"><span>Transferencia</span><span class="font-bold">$36.980</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full bg-purple-400" style="width:13%;"></div></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-700">
+                            <div class="flex justify-between text-sm"><span class="text-gray-400">Total hoy</span><span class="font-black text-lg" style="color:var(--trikode-green)">$299.900</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Empleados en turno -->
+                    <div class="glass p-6 rounded-xl">
+                        <h2 class="text-lg font-bold mb-4">Empleados en turno</h2>
+                        <div class="space-y-4">
+                            <div class="p-3 rounded-xl" style="background: rgba(0,255,136,0.07); border: 1px solid rgba(0,255,136,0.2);">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <div class="font-bold">Rocío P. <span class="text-xs text-gray-400 ml-1">Cajera</span></div>
+                                        <div class="text-xs text-gray-400">Turno desde 07:00</div>
+                                    </div>
+                                    <div class="text-xs font-bold px-2 py-1 rounded-full bg-green-900 text-green-400">ABIERTO</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-gray-400">Ventas:</span> <span class="font-bold">48</span></div>
+                                    <div><span class="text-gray-400">Total:</span> <span class="font-bold" style="color:var(--trikode-green)">$187.320</span></div>
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl" style="background: rgba(0,255,136,0.07); border: 1px solid rgba(0,255,136,0.2);">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <div class="font-bold">Martín R. <span class="text-xs text-gray-400 ml-1">Cajero</span></div>
+                                        <div class="text-xs text-gray-400">Turno desde 10:00</div>
+                                    </div>
+                                    <div class="text-xs font-bold px-2 py-1 rounded-full bg-green-900 text-green-400">ABIERTO</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><span class="text-gray-400">Ventas:</span> <span class="font-bold">31</span></div>
+                                    <div><span class="text-gray-400">Total:</span> <span class="font-bold" style="color:var(--trikode-green)">$112.580</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ventas Recientes -->
+                    <div class="glass p-6 rounded-xl lg:col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">Últimas ventas</h2>
+                            <span class="text-xs text-green-400 font-semibold">● En vivo</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-left text-gray-400 text-xs">
+                                        <th class="pb-2">#</th>
+                                        <th class="pb-2">Hora</th>
+                                        <th class="pb-2">Empleado</th>
+                                        <th class="pb-2">Items</th>
+                                        <th class="pb-2">Total</th>
+                                        <th class="pb-2">Pago</th>
+                                        <th class="pb-2">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-ventas-recientes"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Bajo -->
+                <div class="glass p-6 rounded-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-red-400"><i class="fas fa-triangle-exclamation mr-2"></i>Alertas de stock</h2>
+                        <button onclick="showStock()" class="text-xs text-green-400 hover:underline">Ver todo el stock →</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="stock-bajo-grid"></div>
+                </div>
+            </div>
+
+            <!-- Ventas View (Hidden by default) -->
+            <div id="ventas-view" class="hidden fade-in">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Punto de Venta (POS)</h1>
+                    <p class="text-gray-400">Gestiona tus ventas (Modo Demo)</p>
+                </div>
+
+                <!-- Sale Form -->
+                <div class="glass p-6 rounded-xl mb-8">
+                    <h2 class="text-xl font-bold mb-4">Nueva Venta</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Buscar Producto</label>
+                            <div class="relative">
+                                <input type="text" 
+                                       id="producto-search"
+                                       placeholder="Escanear o buscar producto..." 
+                                       class="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none"
+                                       onkeyup="buscarProducto(this.value)"
+                                       onfocus="buscarProducto(this.value)"
+                                       onkeydown="if(event.key==='Enter'){event.preventDefault();agregarPrimerResultadoProducto();}">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div id="producto-results" class="mt-3 space-y-2"></div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Cliente</label>
+                            <input type="text" 
+                                   placeholder="Nombre del cliente (opcional)" 
+                                   class="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Cart -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-bold mb-4">Carrito</h3>
+                        <div id="sale-cart" class="space-y-3 mb-6 max-h-64 overflow-y-auto">
+                            <p class="text-gray-400 text-center py-8">El carrito está vacío</p>
+                        </div>
+                        <div class="border-t border-gray-700 pt-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-xl">Total:</span>
+                                <span id="sale-total" class="text-2xl font-bold" style="color: var(--trikode-green);">$0.00</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <select id="sale-payment-method" class="px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none">
+                                    <option>Efectivo</option>
+                                    <option>Tarjeta</option>
+                                    <option>Transferencia</option>
+                                    <option>Mercado Pago</option>
+                                </select>
+                                <button onclick="completarVenta()" class="btn-primary demo-disabled">
+                                    <i class="fas fa-check mr-2"></i>Registrar Venta (Demo)
+                                </button>
+                                <button onclick="imprimirTicketInterno()" class="btn-secondary">
+                                    <i class="fas fa-receipt mr-2"></i>Imprimir Ticket Interno
+                                </button>
+                                <button onclick="limpiarCarrito()" class="btn-secondary">
+                                    <i class="fas fa-trash mr-2"></i>Limpiar
+                                </button>
+                            </div>
+                            <div id="venta-demo-feedback" class="hidden mt-4 p-4 rounded-lg" style="background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.25);">
+                                <p class="text-sm text-gray-200">Venta simulada registrada: <strong id="venta-demo-total" style="color: var(--trikode-green);">$0.00</strong></p>
+                                <p class="text-xs text-gray-400 mt-1">Ahora ya podes registrarte para pasar al sistema real.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos View (Hidden by default) -->
+            <div id="productos-view" class="hidden fade-in">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Productos</h1>
+                    <p class="text-gray-400">Gestiona tu catálogo (Modo Demo)</p>
+                </div>
+
+                <!-- Product Actions -->
+                <div class="glass p-6 rounded-xl mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Catálogo de Productos</h2>
+                        <button onclick="nuevoProducto()" class="btn-primary demo-disabled">
+                            <i class="fas fa-plus mr-2"></i>Nuevo Producto (Demo)
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" 
+                               placeholder="Buscar productos..." 
+                               class="w-full pl-10 pr-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none"
+                               onkeyup="filtrarProductos(this.value)">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="productos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Turnos View -->
+            <div id="turnos-view" class="hidden fade-in">
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold mb-1">Turnos</h1>
+                    <p class="text-gray-400 text-sm">Control de apertura y cierre de caja por empleado (Modo Demo)</p>
+                </div>
+
+                <!-- Turno activo (empleado actual) -->
+                <div class="glass p-6 rounded-xl mb-6" style="border: 1px solid rgba(0,255,136,0.3);">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="text-xs text-gray-400 mb-1">TU TURNO ACTUAL</div>
+                            <h2 class="text-xl font-bold">Rocío P. — Cajera</h2>
+                            <div class="text-sm text-gray-400 mt-1"><i class="fas fa-clock mr-1"></i>Apertura: 07:00 hs · Duración: <span id="duracion-turno">7h 52m</span></div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs font-bold px-3 py-1 rounded-full bg-green-900 text-green-400 mb-2">TURNO ABIERTO</div>
+                            <div class="text-xs text-gray-400">Caja inicial: <span class="font-bold text-white">$5.000</span></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <div class="p-3 rounded-lg" style="background: rgba(255,255,255,0.05);">
+                            <div class="text-xs text-gray-400 mb-1">Ventas realizadas</div>
+                            <div class="text-xl font-black">48</div>
+                        </div>
+                        <div class="p-3 rounded-lg" style="background: rgba(255,255,255,0.05);">
+                            <div class="text-xs text-gray-400 mb-1">Total vendido</div>
+                            <div class="text-xl font-black" style="color: var(--trikode-green);">$187.320</div>
+                        </div>
+                        <div class="p-3 rounded-lg" style="background: rgba(255,255,255,0.05);">
+                            <div class="text-xs text-gray-400 mb-1">Efectivo en caja</div>
+                            <div class="text-xl font-black">$89.200</div>
+                        </div>
+                        <div class="p-3 rounded-lg" style="background: rgba(255,255,255,0.05);">
+                            <div class="text-xs text-gray-400 mb-1">Anulaciones</div>
+                            <div class="text-xl font-black text-red-400">1</div>
+                        </div>
+                    </div>
+                    <button onclick="showDemoModal('cierre-turno')" class="btn-primary text-sm">
+                        <i class="fas fa-lock mr-2"></i>Cerrar mi turno
+                    </button>
+                </div>
+
+                <!-- Historial de turnos -->
+                <div class="glass p-6 rounded-xl">
+                    <h2 class="text-lg font-bold mb-4">Historial de turnos — Últimos 7 días</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-xs text-gray-400">
+                                    <th class="pb-3">Fecha</th>
+                                    <th class="pb-3">Empleado</th>
+                                    <th class="pb-3">Apertura</th>
+                                    <th class="pb-3">Cierre</th>
+                                    <th class="pb-3">Ventas</th>
+                                    <th class="pb-3">Total</th>
+                                    <th class="pb-3">Diferencia</th>
+                                    <th class="pb-3">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-t border-gray-700"><td class="py-3">12/03</td><td>Rocío P.</td><td>07:00</td><td>—</td><td>48</td><td class="font-bold" style="color:var(--trikode-green)">$187.320</td><td>—</td><td><span class="text-xs px-2 py-1 rounded-full bg-green-900 text-green-400">ABIERTO</span></td></tr>
+                                <tr class="border-t border-gray-700"><td class="py-3">12/03</td><td>Martín R.</td><td>10:00</td><td>—</td><td>31</td><td class="font-bold" style="color:var(--trikode-green)">$112.580</td><td>—</td><td><span class="text-xs px-2 py-1 rounded-full bg-green-900 text-green-400">ABIERTO</span></td></tr>
+                                <tr class="border-t border-gray-700"><td class="py-3">11/03</td><td>Rocío P.</td><td>07:00</td><td>15:00</td><td>62</td><td>$234.700</td><td class="text-green-400">+$1.200</td><td><span class="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-300">CERRADO</span></td></tr>
+                                <tr class="border-t border-gray-700"><td class="py-3">11/03</td><td>Martín R.</td><td>10:00</td><td>18:00</td><td>55</td><td>$198.400</td><td class="text-red-400">-$500</td><td><span class="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-300">CERRADO</span></td></tr>
+                                <tr class="border-t border-gray-700"><td class="py-3">10/03</td><td>Rocío P.</td><td>07:00</td><td>15:00</td><td>58</td><td>$218.900</td><td class="text-green-400">$0</td><td><span class="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-300">CERRADO</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reportes View -->
+            <div id="reportes-view" class="hidden fade-in">
+                <div class="mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-1">Reportes</h1>
+                        <p class="text-gray-400 text-sm">Análisis y cierres del negocio (Modo Demo)</p>
+                    </div>
+                    <button onclick="showDemoModal('export')" class="btn-secondary text-sm">
+                        <i class="fas fa-download mr-2"></i>Exportar CSV
+                    </button>
+                </div>
+
+                <!-- Reporte Z del día -->
+                <div class="glass p-6 rounded-xl mb-6" style="border: 1px solid rgba(0,255,136,0.2);">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">Reporte Z — Cierre de Hoy</h2>
+                        <div class="text-xs text-gray-400">12/03/2026 · Generado: 14:58 hs</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div>
+                            <div class="text-xs text-gray-400 uppercase mb-3 font-semibold">Resumen general</div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-400">Total ventas:</span><span class="font-bold">79</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Anulaciones:</span><span class="font-bold text-red-400">2</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Devoluciones:</span><span class="font-bold text-yellow-400">0</span></div>
+                                <div class="flex justify-between border-t border-gray-700 pt-2 mt-2"><span class="font-bold">Total neto:</span><span class="font-black" style="color:var(--trikode-green)">$299.900</span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-400 uppercase mb-3 font-semibold">Por método de pago</div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-400">Efectivo:</span><span class="font-bold">$135.200</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Mercado Pago:</span><span class="font-bold">$67.220</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Tarjeta:</span><span class="font-bold">$60.500</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Transferencia:</span><span class="font-bold">$36.980</span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-gray-400 uppercase mb-3 font-semibold">Por empleado</div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-gray-400">Rocío P.:</span><span class="font-bold">$187.320 (48v)</span></div>
+                                <div class="flex justify-between"><span class="text-gray-400">Martín R.:</span><span class="font-bold">$112.580 (31v)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Histórico mensual -->
+                <div class="glass p-6 rounded-xl mb-6">
+                    <h2 class="text-lg font-bold mb-4">Ventas últimas 4 semanas — Comparativo</h2>
+                    <canvas id="grafico-semanas" height="80"></canvas>
+                </div>
+
+                <!-- Top Productos -->
+                <div class="glass p-6 rounded-xl">
+                    <h2 class="text-lg font-bold mb-4">Top 5 productos más vendidos — Este mes</h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-4">
+                            <div class="text-lg font-black text-gray-500 w-6">1</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm mb-1"><span class="font-bold">Cigarrillos Marlboro</span><span class="font-bold" style="color:var(--trikode-green)">$842.000</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full" style="width:88%; background:var(--trikode-green);"></div></div>
+                            </div>
+                            <div class="text-xs text-gray-400 w-12 text-right">200u</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-lg font-black text-gray-500 w-6">2</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm mb-1"><span class="font-bold">Coca-Cola 500ml</span><span class="font-bold">$520.200</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full bg-blue-400" style="width:54%;"></div></div>
+                            </div>
+                            <div class="text-xs text-gray-400 w-12 text-right">359u</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-lg font-black text-gray-500 w-6">3</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm mb-1"><span class="font-bold">RedBull 250ml</span><span class="font-bold">$336.000</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full bg-yellow-400" style="width:35%;"></div></div>
+                            </div>
+                            <div class="text-xs text-gray-400 w-12 text-right">120u</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-lg font-black text-gray-500 w-6">4</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm mb-1"><span class="font-bold">Alfajor Jorgito Triple</span><span class="font-bold">$296.400</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full bg-purple-400" style="width:31%;"></div></div>
+                            </div>
+                            <div class="text-xs text-gray-400 w-12 text-right">380u</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-lg font-black text-gray-500 w-6">5</div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-sm mb-1"><span class="font-bold">Agua Mineral 2.25L</span><span class="font-bold">$225.400</span></div>
+                                <div class="w-full bg-gray-700 rounded-full h-2"><div class="h-2 rounded-full bg-orange-400" style="width:23%;"></div></div>
+                            </div>
+                            <div class="text-xs text-gray-400 w-12 text-right">230u</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empleados View -->
+            <div id="empleados-view" class="hidden fade-in">
+                <div class="mb-6 flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-1">Empleados</h1>
+                        <p class="text-gray-400 text-sm">Gestión de tu equipo (Modo Demo)</p>
+                    </div>
+                    <button onclick="showDemoModal('nuevo-empleado')" class="btn-primary text-sm">
+                        <i class="fas fa-user-plus mr-2"></i>Agregar empleado
+                    </button>
+                </div>
+
+                <!-- Cards empleados -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="glass p-6 rounded-xl" style="border: 1px solid rgba(0,255,136,0.25);">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg" style="background: var(--trikode-green); color: #000;">R</div>
+                                <div>
+                                    <div class="font-bold text-lg">Rocío P.</div>
+                                    <div class="text-xs text-gray-400">Cajera · Activa</div>
+                                </div>
+                            </div>
+                            <div class="text-xs font-bold px-2 py-1 rounded-full bg-green-900 text-green-400">EN TURNO</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 text-center text-xs mb-4">
+                            <div class="p-2 rounded-lg" style="background:rgba(255,255,255,0.05)">
+                                <div class="font-black text-base">48</div>
+                                <div class="text-gray-400">Ventas hoy</div>
+                            </div>
+                            <div class="p-2 rounded-lg" style="background:rgba(255,255,255,0.05)">
+                                <div class="font-black text-base" style="color:var(--trikode-green)">$187k</div>
+                                <div class="text-gray-400">Total hoy</div>
+                            </div>
+                            <div class="p-2 rounded-lg" style="background:rgba(255,255,255,0.05)">
+                                <div class="font-black text-base">462</div>
+                                <div class="text-gray-400">Total mes</div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-400 mb-3">Promedio por venta: <span class="font-bold text-white">$3.902</span></div>
+                        <div class="flex gap-2">
+                            <button onclick="showDemoModal('historial-empleado')" class="btn-secondary text-xs flex-1">Ver historial</button>
+                            <button onclick="showDemoModal('editar-empleado')" class="btn-secondary text-xs flex-1">Editar</button>
+                        </div>
+                    </div>
+                    <div class="glass p-6 rounded-xl" style="border: 1px solid rgba(0,255,136,0.25);">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg" style="background: #3b82f6; color: #fff;">M</div>
+                                <div>
+                                    <div class="font-bold text-lg">Martín R.</div>
+                                    <div class="text-xs text-gray-400">Cajero · Activo</div>
+                                </div>
+                            </div>
+                            <div class="text-xs font-bold px-2 py-1 rounded-full bg-green-900 text-green-400">EN TURNO</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3 text-center text-xs mb-4">
+                            <div class="p-2 rounded-lg" style="background:rgba(255,255,255,0.05)">
+                                <div class="font-black text-base">31</div>
+                                <div class="text-gray-400">Ventas hoy</div>
+                            </div>
+                            <div class="p-2 rounded-lg" style="background:rgba(255,255,255,0.05)">
+                                <div class="font-black text-base" style="color:var(--trikode-green)">$112k</div>
+                                <div class="text-gray-400">Total hoy</div>
+                            </div>
+                            <div class="p-2 rounded-lg" style="background:rgba(255,255,255,0.05)">
+                                <div class="font-black text-base">318</div>
+                                <div class="text-gray-400">Total mes</div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-400 mb-3">Promedio por venta: <span class="font-bold text-white">$3.631</span></div>
+                        <div class="flex gap-2">
+                            <button onclick="showDemoModal('historial-empleado')" class="btn-secondary text-xs flex-1">Ver historial</button>
+                            <button onclick="showDemoModal('editar-empleado')" class="btn-secondary text-xs flex-1">Editar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Demo CTA -->
+    <div id="demo-modal" class="hidden fixed inset-0 flex items-center justify-center z-50" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);">
+        <div class="glass p-8 rounded-2xl max-w-md w-full mx-4" style="border: 1px solid rgba(152,206,79,0.4);">
+            <div id="modal-content"></div>
+            <div class="mt-6 flex gap-3">
+                <a href="/activar" class="flex-1 text-center font-bold py-3 px-4 rounded-xl text-sm" style="background: var(--trikode-green); color: #000;">
+                    <i class="fas fa-arrow-right mr-2"></i>Activar mi comercio ahora
+                </a>
+                <button onclick="closeModal()" class="btn-secondary text-sm px-4 py-3">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Splash venta demo -->
+    <div id="venta-splash" class="hidden fixed inset-0 z-50 items-center justify-center" style="background: radial-gradient(circle at center, rgba(152,206,79,0.2), rgba(0,0,0,0.92));">
+        <div id="venta-splash-card" class="glass p-8 rounded-2xl text-center max-w-lg w-full mx-4" style="border: 1px solid rgba(152,206,79,0.45); box-shadow: 0 20px 80px rgba(51,211,231,0.2);">
+            <div class="text-5xl mb-4" style="color: var(--trikode-cyan);"><i class="fas fa-receipt"></i></div>
+            <h3 class="text-3xl font-black mb-3" style="color: var(--trikode-green);">VENTA REGISTRADA</h3>
+            <p id="venta-splash-text" class="text-lg text-gray-100 mb-3">Se vendio en total $0 ARS</p>
+            <div id="venta-splash-amount" class="venta-splash-amount text-4xl font-black" style="color: var(--trikode-green);">$0 ARS</div>
+            <p class="text-xs text-gray-300 mt-3">Asi de rapido ves el impacto de cada ticket en caja.</p>
+            <div class="mt-4 text-left text-xs text-gray-200 space-y-2" style="background: rgba(152,206,79,0.08); border: 1px solid rgba(152,206,79,0.25); border-radius: 10px; padding: 10px 12px;">
+                <div><strong>1.</strong> Sabe exactamente cuanto vendes cada dia.</div>
+                <div><strong>2.</strong> Controla caja y evita perdidas por manejo incorrecto.</div>
+                <div><strong>3.</strong> Lleva control interno sin papel, todo en el sistema.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass mt-20">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <!-- Legal Disclaimer -->
+            <div class="mb-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700">
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-shield-alt text-gray-400 text-lg mt-1"></i>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-semibold text-gray-300 mb-2">
+                            Información Legal Importante
+                        </h4>
+                        <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                            <strong>Trikode Ingeniería es un Sistema de Gestión de Control Interno.</strong> Este software NO realiza facturación electrónica ni está vinculado a entes de fiscalización tributaria (ARCA/AFIP). Los datos cargados son responsabilidad exclusiva del usuario para su administración privada.
+                        </p>
+                        <p class="text-xs text-gray-400 leading-relaxed">
+                            <strong>¡Bienvenido a Trikode!</strong> Tu información es privada. Este sistema funciona de manera 100% offline respecto a los entes de control. Trikode es tu aliado para saber cuánto tenés y cuánto ganás, nada más.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Info -->
+            <div class="text-center">
+                <p class="text-gray-300">&copy; 2026 Trikode Ingeniería. Todos los derechos reservados.</p>
+                <p class="text-gray-400 text-sm mt-2">Sistema de Control Interno - Modo Demostración</p>
+                <p class="text-gray-500 text-xs mt-1">v1.0.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global App Context
+        window.useAppContext = {
+            isDemo: true,
+            isDashboard: false,
+            currentUser: {
+                nombre: 'Kiosco Demo',
+                rubro: 'Kiosco',
+                tenantId: 'demo-tenant-123'
+            }
+        };
+
+        // Mock Data for Demo
+        window.mockData = {
+            productos: [
+                { id: 1, nombre: 'Coca-Cola 500ml', stock: 5, precio: 1450, categoria: 'Bebidas' },
+                { id: 2, nombre: 'Alfajor Jorgito Triple', stock: 42, precio: 780, categoria: 'Golosinas' },
+                { id: 3, nombre: 'Papas Lays Classic 130g', stock: 18, precio: 1180, categoria: 'Snacks' },
+                { id: 4, nombre: 'Agua Mineral 2.25L', stock: 60, precio: 980, categoria: 'Bebidas' },
+                { id: 5, nombre: 'Chicle Bubaloo x10', stock: 220, precio: 620, categoria: 'Golosinas' },
+                { id: 6, nombre: 'Chocolate Milka 55g', stock: 34, precio: 1250, categoria: 'Golosinas' },
+                { id: 7, nombre: 'Sprite 500ml', stock: 22, precio: 1380, categoria: 'Bebidas' },
+                { id: 8, nombre: 'Cigarrillos Marlboro', stock: 8, precio: 4200, categoria: 'Tabaco' },
+                { id: 9, nombre: 'RedBull 250ml', stock: 12, precio: 2800, categoria: 'Bebidas' },
+                { id: 10, nombre: 'Chiclets Adams 2u', stock: 180, precio: 350, categoria: 'Golosinas' },
+                { id: 11, nombre: 'Barra Cerealita 23g', stock: 3, precio: 590, categoria: 'Golosinas' },
+                { id: 12, nombre: 'Cigarrillos Lucky Strike', stock: 6, precio: 4100, categoria: 'Tabaco' }
+            ],
+            ventas: [
+                { id: 'V-0891', hora: '14:52', empleado: 'Martín R.', items: 4, total: 5830, metodo: 'Efectivo', estado: 'COMPLETADA' },
+                { id: 'V-0890', hora: '14:38', empleado: 'Rocío P.', items: 2, total: 3130, metodo: 'Mercado Pago', estado: 'COMPLETADA' },
+                { id: 'V-0889', hora: '14:21', empleado: 'Martín R.', items: 1, total: 4200, metodo: 'Efectivo', estado: 'COMPLETADA' },
+                { id: 'V-0888', hora: '14:05', empleado: 'Rocío P.', items: 3, total: 2610, metodo: 'Transferencia', estado: 'COMPLETADA' },
+                { id: 'V-0887', hora: '13:49', empleado: 'Martín R.', items: 2, total: 1730, metodo: 'Tarjeta', estado: 'COMPLETADA' },
+                { id: 'V-0886', hora: '13:33', empleado: 'Rocío P.', items: 5, total: 7450, metodo: 'Efectivo', estado: 'COMPLETADA' },
+                { id: 'V-0885', hora: '13:17', empleado: 'Martín R.', items: 1, total: 1450, metodo: 'Tarjeta', estado: 'COMPLETADA' },
+                { id: 'V-0884', hora: '13:02', empleado: 'Rocío P.', items: 3, total: 4380, metodo: 'Efectivo', estado: 'COMPLETADA' },
+                { id: 'V-0883', hora: '12:45', empleado: 'Martín R.', items: 2, total: 2800, metodo: 'Mercado Pago', estado: 'COMPLETADA' },
+                { id: 'V-0882', hora: '12:31', empleado: 'Rocío P.', items: 4, total: 3960, metodo: 'Efectivo', estado: 'ANULADA' }
+            ],
+            empleados: [
+                { id: 1, nombre: 'Rocío P.', rol: 'Cajera', turno_desde: '07:00', ventas: 48, total_vendido: 187320, efectivo: 84200, tarjeta: 32100, transferencia: 22800, mp: 48220, estado_turno: 'ABIERTO' },
+                { id: 2, nombre: 'Martín R.', rol: 'Cajero', turno_desde: '10:00', ventas: 31, total_vendido: 112580, efectivo: 51000, tarjeta: 28400, transferencia: 14180, mp: 19000, estado_turno: 'ABIERTO' }
+            ],
+            stockBajo: [
+                { nombre: 'Coca-Cola 500ml', categoria: 'Bebidas', stock: 5, minimo: 20, estado: 'CRITICO' },
+                { nombre: 'Barra Cerealita 23g', categoria: 'Golosinas', stock: 3, minimo: 30, estado: 'CRITICO' },
+                { nombre: 'Cigarrillos Marlboro', categoria: 'Tabaco', stock: 8, minimo: 25, estado: 'BAJO' },
+                { nombre: 'Cigarrillos Lucky Strike', categoria: 'Tabaco', stock: 6, minimo: 25, estado: 'CRITICO' },
+                { nombre: 'RedBull 250ml', categoria: 'Bebidas', stock: 12, minimo: 24, estado: 'BAJO' },
+                { nombre: 'Papas Lays Classic 130g', categoria: 'Snacks', stock: 18, minimo: 30, estado: 'BAJO' }
+            ],
+            stats: {
+                ventasMes: 3842180,
+                productosStock: 1248,
+                ventasHoy: 79,
+                totalHoy: 299900,
+                stockBajo: 6,
+                anuladas: 2
+            },
+            grafico_horas: [0, 0, 0, 0, 0, 0, 12400, 38700, 47200, 61800, 72400, 63100, 55800, 48900, 41200, 37500, 29800, 22100, 14300, 7800, 3200, 0, 0, 0]
+        };
+
+        // Global state
+        let currentView = 'dashboard';
+        let saleCart = [];
+        let productSearchMatches = [];
+        let graficoHoras = null;
+        let graficoSemanas = null;
+        let demoSaleCompleted = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            initDashboard();
+            loadProductos();
+            // Actualizar ventas recientes cada 12s simulando "en vivo"
+            setInterval(tickVentasEnVivo, 12000);
+        });
+
+        // User info
+        function loadUserInfo() {
+            document.getElementById('comercio-nombre').textContent = window.useAppContext.currentUser.nombre;
+            document.getElementById('comercio-rubro').textContent = window.useAppContext.currentUser.rubro;
+        }
+
+        function initDashboard() {
+            // Fecha
+            const ahora = new Date();
+            const fechaStr = ahora.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+            const el = document.getElementById('fecha-hoy');
+            if (el) el.textContent = fechaStr.charAt(0).toUpperCase() + fechaStr.slice(1);
+
+            renderVentasRecientes();
+            renderStockBajo();
+            renderGraficoHoras();
+        }
+
+        function renderVentasRecientes() {
+            const tbody = document.getElementById('tabla-ventas-recientes');
+            if (!tbody) return;
+            tbody.innerHTML = window.mockData.ventas.map(v => {
+                const estadoClass = v.estado === 'COMPLETADA' ? 'text-green-400' : 'text-red-400';
+                const estadoBg = v.estado === 'COMPLETADA' ? 'bg-green-900' : 'bg-red-900';
+                return `<tr class="border-t border-gray-700">
+                    <td class="py-2 text-xs text-gray-400">${v.id}</td>
+                    <td class="py-2 text-sm">${v.hora}</td>
+                    <td class="py-2 text-sm">${v.empleado}</td>
+                    <td class="py-2 text-sm">${v.items}</td>
+                    <td class="py-2 text-sm font-bold" style="color:var(--trikode-green)">$${v.total.toLocaleString('es-AR')}</td>
+                    <td class="py-2 text-xs text-gray-300">${v.metodo}</td>
+                    <td class="py-2"><span class="text-xs px-2 py-1 rounded-full ${estadoBg} ${estadoClass}">${v.estado}</span></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderStockBajo() {
+            const grid = document.getElementById('stock-bajo-grid');
+            if (!grid) return;
+            grid.innerHTML = window.mockData.stockBajo.map(p => {
+                const esCritico = p.estado === 'CRITICO';
+                const bgColor = esCritico ? 'rgba(239,68,68,0.1)' : 'rgba(234,179,8,0.1)';
+                const borderColor = esCritico ? 'rgba(239,68,68,0.4)' : 'rgba(234,179,8,0.4)';
+                const textColor = esCritico ? 'text-red-400' : 'text-yellow-400';
+                return `<div class="p-4 rounded-xl flex justify-between items-center" style="background:${bgColor}; border:1px solid ${borderColor};">
+                    <div>
+                        <div class="font-bold text-sm">${p.nombre}</div>
+                        <div class="text-xs text-gray-400">${p.categoria}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-black ${textColor}">${p.stock} u.</div>
+                        <div class="text-xs text-gray-400">Mín: ${p.minimo}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderGraficoHoras() {
+            const canvas = document.getElementById('grafico-horas');
+            if (!canvas) return;
+            if (graficoHoras) { graficoHoras.destroy(); }
+            const labels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2,'0')}h`);
+            graficoHoras = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Ventas ($)',
+                        data: window.mockData.grafico_horas,
+                        backgroundColor: 'rgba(0,255,136,0.5)',
+                        borderColor: 'rgba(0,255,136,0.9)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#9ca3af', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#9ca3af', font: { size: 10 }, callback: v => v >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${v}` }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        function renderGraficoSemanas() {
+            const canvas = document.getElementById('grafico-semanas');
+            if (!canvas) return;
+            if (graficoSemanas) { graficoSemanas.destroy(); }
+            const labels = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+            const semana1 = [180400, 210300, 195800, 240100, 310500, 420800, 280700];
+            const semana2 = [165200, 228900, 185600, 255000, 298700, 398200, 265400];
+            graficoSemanas = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Esta semana',
+                            data: semana1,
+                            borderColor: 'rgba(0,255,136,0.9)',
+                            backgroundColor: 'rgba(0,255,136,0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: 'rgba(0,255,136,0.9)'
+                        },
+                        {
+                            label: 'Semana anterior',
+                            data: semana2,
+                            borderColor: 'rgba(156,163,175,0.7)',
+                            backgroundColor: 'rgba(156,163,175,0.05)',
+                            tension: 0.4,
+                            fill: false,
+                            borderDash: [4,4],
+                            pointBackgroundColor: 'rgba(156,163,175,0.7)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#9ca3af', font: { size: 11 } } } },
+                    scales: {
+                        x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#9ca3af', callback: v => `$${(v/1000).toFixed(0)}k` }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+        }
+
+        let ventaSimuladaIdx = 892;
+        function tickVentasEnVivo() {
+            if (currentView !== 'dashboard') return;
+            ventaSimuladaIdx++;
+            const empleados = ['Rocío P.', 'Martín R.'];
+            const metodos = ['Efectivo', 'Mercado Pago', 'Tarjeta', 'Transferencia'];
+            const total = Math.floor(Math.random() * 6000 + 800);
+            const items = Math.floor(Math.random() * 5 + 1);
+            const ahora = new Date();
+            const horaStr = `${String(ahora.getHours()).padStart(2,'0')}:${String(ahora.getMinutes()).padStart(2,'0')}`;
+            window.mockData.ventas.unshift({
+                id: `V-0${ventaSimuladaIdx}`,
+                hora: horaStr,
+                empleado: empleados[Math.floor(Math.random() * 2)],
+                items,
+                total,
+                metodo: metodos[Math.floor(Math.random() * 4)],
+                estado: 'COMPLETADA'
+            });
+            window.mockData.ventas = window.mockData.ventas.slice(0, 10);
+            // Update stat-hoy
+            window.mockData.stats.totalHoy += total;
+            window.mockData.stats.ventasHoy += 1;
+            const statHoy = document.getElementById('stat-hoy');
+            const statCant = document.getElementById('stat-cant-hoy');
+            if (statHoy) statHoy.textContent = '$' + window.mockData.stats.totalHoy.toLocaleString('es-AR');
+            if (statCant) statCant.textContent = window.mockData.stats.ventasHoy;
+            renderVentasRecientes();
+
+            // También actualizar gráfico de hora actual
+            const horaActual = ahora.getHours();
+            window.mockData.grafico_horas[horaActual] += total;
+            if (graficoHoras) {
+                graficoHoras.data.datasets[0].data = window.mockData.grafico_horas;
+                graficoHoras.update('none');
+            }
+        }
+
+        // Navigation
+        function showDashboard() {
+            hideAllViews();
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            updateSidebar(0);
+            currentView = 'dashboard';
+        }
+
+        function showVentas() {
+            hideAllViews();
+            document.getElementById('ventas-view').classList.remove('hidden');
+            updateSidebar(1);
+            currentView = 'ventas';
+            buscarProducto('');
+        }
+
+        function showProductos() {
+            hideAllViews();
+            document.getElementById('productos-view').classList.remove('hidden');
+            updateSidebar(2);
+            currentView = 'productos';
+        }
+
+        function showStock() {
+            showDemoModal('stock');
+        }
+
+        function showTurnos() {
+            hideAllViews();
+            document.getElementById('turnos-view').classList.remove('hidden');
+            updateSidebar(4);
+            currentView = 'turnos';
+            updateDuracionTurno();
+        }
+
+        function showReportes() {
+            hideAllViews();
+            document.getElementById('reportes-view').classList.remove('hidden');
+            updateSidebar(5);
+            currentView = 'reportes';
+            setTimeout(renderGraficoSemanas, 100);
+        }
+
+        function showEmpleados() {
+            hideAllViews();
+            document.getElementById('empleados-view').classList.remove('hidden');
+            updateSidebar(6);
+            currentView = 'empleados';
+        }
+
+        function showClientes() {
+            showDemoModal('clientes');
+        }
+
+        function hideAllViews() {
+            ['dashboard-view','ventas-view','productos-view','turnos-view','reportes-view','empleados-view'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+        }
+
+        function updateSidebar(activeIndex) {
+            document.querySelectorAll('.sidebar-item').forEach((item, i) => {
+                item.classList.toggle('active', i === activeIndex);
+            });
+        }
+
+        function updateDuracionTurno() {
+            const apertura = new Date();
+            apertura.setHours(7, 0, 0, 0);
+            const diff = Math.floor((new Date() - apertura) / 60000);
+            const h = Math.floor(diff / 60);
+            const m = diff % 60;
+            const el = document.getElementById('duracion-turno');
+            if (el) el.textContent = `${h}h ${m}m`;
+        }
+
+        // Modal system
+        const modalTexts = {
+            'cierre': {
+                titulo: 'Cierre del día',
+                cuerpo: 'El cierre diario consolida todas las ventas del día y genera el Reporte Z. Te muestra exactamente cuánto efectivo debería haber en cada caja y la diferencia real declarada por cada empleado.<br><br><strong>Disponible en la versión completa.</strong>'
+            },
+            'cierre-turno': {
+                titulo: 'Cerrar turno',
+                cuerpo: 'Al cerrar tu turno ingresás el efectivo que contás físicamente. El sistema calcula automáticamente la diferencia con el efectivo esperado y registra el cierre. El dueño puede ver en tiempo real si hay faltantes.<br><br><strong>Disponible en la versión completa.</strong>'
+            },
+            'export': {
+                titulo: 'Exportar reporte',
+                cuerpo: 'Exportá cualquier reporte en CSV o PDF: ventas por período, por empleado, por producto, cierre Z diario o mensual. Ideal para llevar al contador.<br><br><strong>Disponible en la versión completa.</strong>'
+            },
+            'stock': {
+                titulo: 'Módulo de Stock',
+                cuerpo: 'Ingresá mercadería, ajustá stock manualmente o por compra, detectá faltantes automáticamente. Alertas personalizadas por producto cuando el stock cae debajo del mínimo que vos configurás.<br><br><strong>Disponible en la versión completa.</strong>'
+            },
+            'nuevo-empleado': {
+                titulo: 'Agregar empleado',
+                cuerpo: 'Agregá empleados con su nombre, email y contraseña. Cada empleado inicia y cierra su propio turno. El dueño puede ver en tiempo real lo que vende cada uno y comparar rendimientos.<br><br><strong>Disponible en la versión completa.</strong>'
+            },
+            'historial-empleado': {
+                titulo: 'Historial del empleado',
+                cuerpo: 'Ves todos los turnos históricos del empleado: ventas realizadas, anulaciones, diferencias de caja y comparativa con otros períodos. Ideal para detectar irregularidades o premiar buen desempeño.<br><br><strong>Disponible en la versión completa.</strong>'
+            },
+            'editar-empleado': {
+                titulo: 'Editar empleado',
+                cuerpo: 'Modificá nombre, contraseña o rol del empleado. También podés desactivarlo temporariamente (ej.: vacaciones) sin perder su historial.<br><br><strong>Disponible en la versión completa.</strong>'
+            },
+            'clientes': {
+                titulo: 'Módulo de Clientes',
+                cuerpo: 'Registrá clientes frecuentes, anotá sus deudas, generá créditos y hacé seguimiento de historial de compras. Perfecto para kioscos con clientes habituales.<br><br><strong>Disponible en la versión completa.</strong>'
+            }
+        };
+
+        function showDemoModal(tipo) {
+            const data = modalTexts[tipo] || { titulo: 'Función del sistema real', cuerpo: 'Esta función está disponible en la versión completa.' };
+            document.getElementById('modal-content').innerHTML = `
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3" style="color: var(--trikode-cyan);"><i class="fas fa-layer-group"></i></div>
+                    <h3 class="text-xl font-black mb-2">${data.titulo}</h3>
+                    <p class="text-sm text-gray-300 leading-relaxed">${data.cuerpo}</p>
+                </div>
+                <div class="p-4 rounded-xl text-sm" style="background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2);">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span>Setup en menos de 5 minutos</span>
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span>Sin hardware obligatorio</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span>Funciona en cualquier dispositivo</span>
+                    </div>
+                </div>`;
+            document.getElementById('demo-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('demo-modal').classList.add('hidden');
+        }
+
+        function mostrarSplashVenta(total) {
+            return new Promise(resolve => {
+                const splash = document.getElementById('venta-splash');
+                const splashCard = document.getElementById('venta-splash-card');
+                const splashText = document.getElementById('venta-splash-text');
+                const splashAmount = document.getElementById('venta-splash-amount');
+                if (!splash || !splashCard || !splashText || !splashAmount) {
+                    resolve();
+                    return;
+                }
+
+                const totalLabel = `$${total.toLocaleString('es-AR')} ARS`;
+                splashText.textContent = `Se vendio en total ${totalLabel}`;
+                splashAmount.textContent = totalLabel;
+
+                splash.classList.remove('hidden');
+                splash.classList.add('flex');
+                splashCard.classList.remove('venta-splash-enter');
+                // Reinicia animacion para ventas sucesivas.
+                void splashCard.offsetWidth;
+                splashCard.classList.add('venta-splash-enter');
+
+                setTimeout(() => {
+                    splash.classList.add('hidden');
+                    splash.classList.remove('flex');
+                    splashCard.classList.remove('venta-splash-enter');
+                    resolve();
+                }, 3000);
+            });
+        }
+
+        // Close modal on overlay click
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('demo-modal');
+            if (e.target === modal) closeModal();
+        });
+
+        // Sales functionality
+        function buscarProducto(query) {
+            const q = (query || '').trim().toLowerCase();
+            const productos = window.mockData?.productos || [];
+            productSearchMatches = productos
+                .filter(p => !q || p.nombre.toLowerCase().includes(q) || p.categoria.toLowerCase().includes(q))
+                .slice(0, 6);
+
+            const resultsEl = document.getElementById('producto-results');
+            if (!resultsEl) return;
+
+            if (productSearchMatches.length === 0) {
+                resultsEl.innerHTML = '<p class="text-xs text-gray-400">Sin resultados. Probá con otro nombre o categoría.</p>';
+                return;
+            }
+
+            resultsEl.innerHTML = productSearchMatches.map((p, idx) => `
+                <button type="button" onclick="addToCartById(${p.id})" class="w-full text-left glass p-3 rounded-lg hover:border-green-400" style="border:1px solid rgba(255,255,255,0.08);">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <div class="text-xs text-gray-400">${idx === 0 ? 'ENTER' : 'Click'} para agregar</div>
+                            <div class="font-bold text-sm">${p.nombre}</div>
+                            <div class="text-xs text-gray-400">${p.categoria} · Stock ${p.stock}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black" style="color: var(--trikode-green);">$${p.precio.toLocaleString('es-AR')}</div>
+                            <div class="text-xs text-gray-400">sumar al carrito</div>
+                        </div>
+                    </div>
+                </button>
+            `).join('');
+        }
+
+        function addToCartById(productId) {
+            const product = (window.mockData?.productos || []).find(p => p.id === productId);
+            if (!product) return;
+            addToCart(product);
+        }
+
+        function agregarPrimerResultadoProducto() {
+            if (!productSearchMatches.length) return;
+            addToCart(productSearchMatches[0]);
+        }
+
+        function addToCart(product) {
+            const existingItem = saleCart.find(item => item.id === product.id);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                saleCart.push({...product, quantity: 1});
+            }
+            updateSaleCart();
+        }
+
+        function updateSaleCart() {
+            const cartElement = document.getElementById('sale-cart');
+            const totalElement = document.getElementById('sale-total');
+            
+            if (saleCart.length === 0) {
+                cartElement.innerHTML = '<p class="text-gray-400 text-center py-8">El carrito está vacío</p>';
+                totalElement.textContent = '$0.00';
+                return;
+            }
+            
+            cartElement.innerHTML = saleCart.map(item => `
+                <div class="glass p-3 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1">
+                            <div class="font-bold text-sm">${item.nombre}</div>
+                            <div class="text-xs text-gray-400">$${item.precio} x ${item.quantity}</div>
+                        </div>
+                        <div class="text-sm font-bold" style="color: var(--trikode-green);">$${(item.precio * item.quantity).toFixed(2)}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            const total = saleCart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+            totalElement.textContent = `$${total.toFixed(2)}`;
+        }
+
+        function habilitarCtaRegistro() {
+            const cta = document.getElementById('header-real-cta');
+            const ctaText = document.getElementById('header-cta-text');
+            if (!cta || !ctaText) return;
+            ctaText.textContent = 'Registrar comercio y activar SIC';
+            cta.setAttribute('href', '/activar');
+        }
+
+        function mostrarVentaExitosa(total, itemsVendidos, metodoPago) {
+            const feedback = document.getElementById('venta-demo-feedback');
+            const totalEl = document.getElementById('venta-demo-total');
+            if (feedback && totalEl) {
+                totalEl.textContent = `$${total.toLocaleString('es-AR')}`;
+                feedback.classList.remove('hidden');
+            }
+
+            document.getElementById('modal-content').innerHTML = `
+                <div class="text-center mb-4">
+                    <div class="text-4xl mb-3" style="color: var(--trikode-green);"><i class="fas fa-circle-check"></i></div>
+                    <h3 class="text-xl font-black mb-2">Venta simulada registrada</h3>
+                    <p class="text-sm text-gray-300 leading-relaxed">
+                        Acabas de cerrar una venta de <strong style="color: var(--trikode-green)">$${total.toLocaleString('es-AR')}</strong><br>
+                        con <strong>${itemsVendidos}</strong> item(s) por <strong>${metodoPago}</strong>.
+                    </p>
+                </div>
+                <div class="p-4 rounded-xl text-sm" style="background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2);">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-chart-line text-green-400"></i>
+                        <span>Ya viste como impacta en caja en tiempo real</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-arrow-right text-green-400"></i>
+                        <span>Ahora registrate y pasalo a produccion</span>
+                    </div>
+                </div>`;
+            document.getElementById('demo-modal').classList.remove('hidden');
+        }
+
+        async function completarVenta() {
+            if (saleCart.length === 0) {
+                alert('El carrito esta vacio. Agrega productos y luego registra la venta.');
+                return;
+            }
+
+            const total = saleCart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+            const itemsVendidos = saleCart.reduce((sum, item) => sum + item.quantity, 0);
+            const metodoPago = document.getElementById('sale-payment-method')?.value || 'Efectivo';
+
+            ventaSimuladaIdx++;
+            window.mockData.ventas.unshift({
+                id: `V-0${ventaSimuladaIdx}`,
+                hora: new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }),
+                empleado: 'Demo User',
+                items: itemsVendidos,
+                total,
+                metodo: metodoPago,
+                estado: 'COMPLETADA'
+            });
+            window.mockData.ventas = window.mockData.ventas.slice(0, 12);
+
+            window.mockData.stats.totalHoy += total;
+            window.mockData.stats.ventasHoy += 1;
+            const statHoy = document.getElementById('stat-hoy');
+            const statCant = document.getElementById('stat-cant-hoy');
+            if (statHoy) statHoy.textContent = '$' + window.mockData.stats.totalHoy.toLocaleString('es-AR');
+            if (statCant) statCant.textContent = window.mockData.stats.ventasHoy;
+            const horaActual = new Date().getHours();
+            if (Array.isArray(window.mockData.grafico_horas)) {
+                window.mockData.grafico_horas[horaActual] += total;
+                if (graficoHoras) graficoHoras.update('none');
+            }
+
+            demoSaleCompleted = true;
+            habilitarCtaRegistro();
+            renderVentasRecientes();
+            await mostrarSplashVenta(total);
+            mostrarVentaExitosa(total, itemsVendidos, metodoPago);
+            limpiarCarrito();
+        }
+
+        function limpiarCarrito() {
+            saleCart = [];
+            updateSaleCart();
+        }
+
+        function imprimirTicketInterno() {
+            if (saleCart.length === 0) {
+                alert('El carrito está vacío. Agregá productos antes de imprimir el ticket.');
+                return;
+            }
+            const total = saleCart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+            const ticketContent = `====================================
+     TICKET INTERNO
+     NO VÁLIDO COMO FACTURA FISCAL
+====================================
+Fecha: ${new Date().toLocaleDateString('es-AR')}
+Hora: ${new Date().toLocaleTimeString('es-AR')}
+Cliente: Consumidor Final
+------------------------------------
+ITEMS:
+${saleCart.map(item => `${item.quantity}x ${item.nombre}  $${(item.precio * item.quantity).toLocaleString('es-AR')}`).join('\n')}
+------------------------------------
+TOTAL: $${total.toLocaleString('es-AR')}
+====================================
+Ticket interno para control
+administrativo. Sin validez fiscal.
+====================================`;
+            alert(`TICKET INTERNO DEMO\n\n${ticketContent}\n\n(En la versión real se imprime directo en la ticketera)`);
+        }
+
+        // Quick actions
+        function nuevaVenta() { showVentas(); }
+        function ingresoStock() { showDemoModal('stock'); }
+
+        // Products functionality
+        function loadProductos() {
+            const productosGrid = document.getElementById('productos-grid');
+            const productos = window.mockData.productos;
+            productosGrid.innerHTML = productos.map(product => {
+                const stockColor = product.stock <= 8 ? 'text-red-400' : product.stock <= 20 ? 'text-yellow-400' : 'text-gray-400';
+                const stockLabel = product.stock <= 8 ? 'Bajo · ' : '';
+                return `
+                <div class="glass p-5 rounded-xl product-card" onclick="addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+                    <div class="text-xs text-gray-400 font-semibold mb-1 uppercase tracking-wide">${product.categoria}</div>
+                    <div class="font-bold text-base mb-1">${product.nombre}</div>
+                    <div class="text-xl font-black mb-3" style="color: var(--trikode-green);">$${product.precio.toLocaleString('es-AR')}</div>
+                    <div class="text-sm ${stockColor} mb-4">${stockLabel}Stock: ${product.stock} u.</div>
+                    <div class="flex gap-2">
+                        <button class="btn-secondary text-xs flex-1" onclick="event.stopPropagation(); showDemoModal('editar-empleado')">
+                            <i class="fas fa-edit mr-1"></i>Editar
+                        </button>
+                        <button class="btn-primary text-xs flex-1" onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})">
+                            <i class="fas fa-plus mr-1"></i>Vender
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function filtrarProductos(query) {
+            const q = query.toLowerCase();
+            const cards = document.querySelectorAll('#productos-grid > div');
+            cards.forEach(card => {
+                const nombre = card.querySelector('.font-bold.text-base')?.textContent?.toLowerCase() || '';
+                card.style.display = nombre.includes(q) ? '' : 'none';
+            });
+        }
+
+        function nuevoProducto() { showDemoModal('editar-empleado'); }
+        function editarProducto(id) { showDemoModal('editar-empleado'); }
+    </script>
+</body>
+</html>

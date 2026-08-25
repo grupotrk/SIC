@@ -1,0 +1,38 @@
+{
+  "name": "sic-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "admin:hash": "node scripts/hash-admin-password.mjs",
+    "ref:generate": "node scripts/generate-referral-codes.mjs",
+    "test:create-user": "tsx scripts/test_create_user.ts",
+    "seed:auditoria": "tsx scripts/seed_auditoria_tenants.ts",
+    "seed:audit-demo": "tsx scripts/seed_audit_demo.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.3.1",
+    "next": "^15.3.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.20.0",
+    "eslint-config-next": "^15.3.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.2"
+  }
+}

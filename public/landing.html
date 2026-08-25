@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIC — Sistema Interno de Control</title>
+    <meta name="description" content="SIC es la herramienta de gestión interna para comercios. Controlá turnos, ventas, empleados y reportes en un solo lugar. Funciona incluso sin internet.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sic-dark:  #0b1730;
+            --sic-blue:  #15345f;
+            --sic-green: #98ce4f;
+            --sic-cyan:  #33d3e7;
+            --sic-mid:   #1e3a5f;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--sic-dark);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2rem;
+            background: rgba(11, 23, 48, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 1.4rem; font-weight: 900; letter-spacing: -0.02em;
+            text-decoration: none; color: white;
+        }
+        .nav-logo span { color: var(--sic-green); }
+        .nav-cta {
+            background: linear-gradient(135deg, var(--sic-green), var(--sic-cyan));
+            color: var(--sic-dark); font-weight: 700; font-size: 0.9rem;
+            padding: 0.55rem 1.4rem; border-radius: 8px;
+            text-decoration: none; transition: opacity 0.2s, transform 0.2s;
+        }
+        .nav-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center;
+            padding: 7rem 2rem 4rem;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(21,52,95,0.7) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 80% 60%, rgba(51,211,231,0.08) 0%, transparent 60%);
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(152,206,79,0.12); border: 1px solid rgba(152,206,79,0.3);
+            color: var(--sic-green); font-size: 0.8rem; font-weight: 600;
+            padding: 0.4rem 1rem; border-radius: 999px; margin-bottom: 2rem;
+            letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        .hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4.5rem);
+            font-weight: 900; line-height: 1.05;
+            letter-spacing: -0.03em; margin-bottom: 1.5rem;
+        }
+        .hero h1 .accent { color: var(--sic-green); }
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: rgba(255,255,255,0.65); max-width: 560px;
+            margin: 0 auto 2.5rem; line-height: 1.7;
+        }
+        .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sic-green), var(--sic-cyan));
+            color: var(--sic-dark); font-weight: 700; font-size: 1rem;
+            padding: 0.85rem 2rem; border-radius: 10px;
+            text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 24px rgba(152,206,79,0.25);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(152,206,79,0.35); }
+        .btn-ghost {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+            color: white; font-weight: 600; font-size: 1rem;
+            padding: 0.85rem 2rem; border-radius: 10px;
+            text-decoration: none; transition: background 0.2s, transform 0.2s;
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+
+        .hero-stats {
+            display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+            margin-top: 4rem; padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .stat { text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: 900; color: var(--sic-green); line-height: 1; }
+        .stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 0.3rem; }
+
+        /* ── SECTIONS ── */
+        section { padding: 5rem 2rem; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .section-tag {
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--sic-cyan); margin-bottom: 0.75rem;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800; letter-spacing: -0.025em; line-height: 1.15;
+            margin-bottom: 1rem;
+        }
+        .section-sub {
+            font-size: 1.05rem; color: rgba(255,255,255,0.55);
+            max-width: 520px; line-height: 1.65;
+        }
+
+        /* ── FEATURES ── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem; margin-top: 3.5rem;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 2rem;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+        .feature-card:hover { border-color: rgba(152,206,79,0.3); transform: translateY(-4px); }
+        .feature-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; margin-bottom: 1.2rem;
+            background: linear-gradient(135deg, rgba(152,206,79,0.2), rgba(51,211,231,0.1));
+            color: var(--sic-green);
+        }
+        .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+        .feature-card p { font-size: 0.92rem; color: rgba(255,255,255,0.55); line-height: 1.65; }
+
+        /* ── HOW IT WORKS ── */
+        .how-section { background: rgba(255,255,255,0.02); }
+        .steps {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem; margin-top: 3.5rem;
+        }
+        .step { text-align: center; }
+        .step-num {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--sic-blue), var(--sic-mid));
+            border: 2px solid rgba(152,206,79,0.4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; font-weight: 900; color: var(--sic-green);
+            margin: 0 auto 1.2rem;
+        }
+        .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .step p { font-size: 0.88rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+        /* ── OFFLINE BANNER ── */
+        .offline-banner {
+            background: linear-gradient(135deg, var(--sic-blue), var(--sic-mid));
+            border: 1px solid rgba(51,211,231,0.2);
+            border-radius: 20px; padding: 3rem 2.5rem;
+            display: grid; grid-template-columns: 1fr auto;
+            align-items: center; gap: 2rem; margin-top: 4rem;
+        }
+        .offline-banner h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.6rem; }
+        .offline-banner p { font-size: 0.95rem; color: rgba(255,255,255,0.65); line-height: 1.6; }
+        .offline-icon { font-size: 3.5rem; color: var(--sic-cyan); opacity: 0.8; }
+        @media (max-width: 600px) {
+            .offline-banner { grid-template-columns: 1fr; text-align: center; }
+            .offline-icon { display: none; }
+        }
+
+        /* ── PRICING ── */
+        .pricing-card {
+            max-width: 440px; margin: 3.5rem auto 0;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(152,206,79,0.25);
+            border-radius: 20px; padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(152,206,79,0.06);
+        }
+        .pricing-label {
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--sic-green); margin-bottom: 0.5rem;
+        }
+        .pricing-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; }
+        .price { font-size: 3.2rem; font-weight: 900; line-height: 1; }
+        .price sup { font-size: 1.5rem; vertical-align: top; margin-top: 0.5rem; }
+        .price sub { font-size: 1rem; font-weight: 500; color: rgba(255,255,255,0.5); }
+        .pricing-features { list-style: none; text-align: left; margin: 2rem 0; space-y: 0.75rem; }
+        .pricing-features li {
+            display: flex; align-items: center; gap: 0.75rem;
+            font-size: 0.95rem; color: rgba(255,255,255,0.8);
+            padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .pricing-features li i { color: var(--sic-green); font-size: 0.85rem; }
+        .pricing-note { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 1rem; }
+
+        /* ── CONTACT ── */
+        .contact-section { text-align: center; }
+        .contact-card {
+            display: inline-flex; flex-direction: column; align-items: center;
+            gap: 1rem; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 2.5rem 3rem; margin-top: 2.5rem;
+        }
+        .contact-card p { color: rgba(255,255,255,0.6); font-size: 0.95rem; }
+        .contact-email {
+            display: flex; align-items: center; gap: 0.6rem;
+            font-size: 1.05rem; font-weight: 600; color: var(--sic-cyan);
+            text-decoration: none;
+        }
+        .contact-email:hover { text-decoration: underline; }
+
+        /* ── FOOTER ── */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.07);
+            padding: 2rem; text-align: center;
+            color: rgba(255,255,255,0.3); font-size: 0.85rem;
+        }
+        footer a { color: rgba(255,255,255,0.4); text-decoration: none; }
+        footer a:hover { color: var(--sic-green); }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.7s ease both; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <a href="#" class="nav-logo">
+        <i class="fas fa-chart-line" style="color: var(--sic-green); font-size: 1.2rem;"></i>
+        <span>SIC</span>
+    </a>
+    <a href="/login" class="nav-cta">Ingresar al sistema</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge fade-up">
+            <i class="fas fa-bolt"></i>
+            Sistema Interno de Control
+        </div>
+        <h1 class="fade-up delay-1">
+            Gestioná tu comercio<br>
+            <span class="accent">sin complicaciones</span>
+        </h1>
+        <p class="fade-up delay-2">
+            Control de turnos, ventas, empleados y cierres diarios en un solo lugar.
+            Funciona incluso cuando no tenés internet.
+        </p>
+        <div class="hero-actions fade-up delay-3">
+            <a href="/login" class="btn-primary">
+                <i class="fas fa-sign-in-alt" style="margin-right: 0.5rem;"></i>
+                Acceder al SIC
+            </a>
+            <a href="#como-funciona" class="btn-ghost">Ver cómo funciona</a>
+        </div>
+
+        <div class="hero-stats fade-up delay-3">
+            <div class="stat">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Datos privados</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">Sin</div>
+                <div class="stat-label">Instalación requerida</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">Offline</div>
+                <div class="stat-label">Funciona sin internet</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="funcionalidades">
+    <div class="container">
+        <div class="section-tag">Funcionalidades</div>
+        <h2 class="section-title">Todo lo que necesitás para operar</h2>
+        <p class="section-sub">
+            Diseñado para comercios reales. Sin funciones que no usás, sin costos ocultos.
+        </p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-clock"></i></div>
+                <h3>Control de turnos</h3>
+                <p>Abrí y cerrá turnos por empleado. Registrá el efectivo inicial, las ventas del turno y generá el arqueo automáticamente.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-cash-register"></i></div>
+                <h3>Punto de venta</h3>
+                <p>Registrá ventas rápidamente por producto. Efectivo o tarjeta. Los totales se calculan solos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>Gestión de empleados</h3>
+                <p>Cada empleado tiene su acceso propio. El dueño ve a todos en tiempo real desde su panel.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
+                <h3>Dashboard del dueño</h3>
+                <p>Ventas del día, empleados activos, efectivo y tarjeta desglosados. Todo actualizado en tiempo real.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-file-pdf"></i></div>
+                <h3>Exportación de reportes</h3>
+                <p>Generá PDFs del arqueo de cada turno y del resumen diario. Listos para imprimir o guardar.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Seguridad y privacidad</h3>
+                <p>Cada comercio es completamente independiente. Tus datos son tuyos y solo vos los ves.</p>
+            </div>
+        </div>
+
+        <!-- Offline Banner -->
+        <div class="offline-banner">
+            <div>
+                <h3>Funciona sin internet</h3>
+                <p>Si se cae la conexión durante el turno, el SIC sigue registrando ventas localmente. Cuando vuelve internet, todo se sincroniza automáticamente sin perder ningún dato.</p>
+            </div>
+            <div class="offline-icon"><i class="fas fa-wifi-slash"></i></div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="como-funciona" class="how-section">
+    <div class="container">
+        <div class="section-tag">Cómo funciona</div>
+        <h2 class="section-title">Empezar es simple</h2>
+        <p class="section-sub">No necesitás instalación ni configuración compleja. Entrás y empezás a operar.</p>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>Recibís tu acceso</h3>
+                <p>Te enviamos los datos de acceso para tu comercio. Cada empleado tiene su propio usuario.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>Abrís el turno</h3>
+                <p>Al inicio del día, el empleado ingresa el efectivo en caja y abre su turno con un clic.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>Registrás ventas</h3>
+                <p>Cada venta queda registrada con método de pago, productos y monto. Sin papel, sin errores.</p>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <h3>Cerrás el día</h3>
+                <p>Al finalizar, el sistema genera el arqueo completo y el dueño cierra el día con un resumen consolidado.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="precio">
+    <div class="container" style="text-align: center;">
+        <div class="section-tag">Precio</div>
+        <h2 class="section-title">Simple y transparente</h2>
+        <p class="section-sub" style="margin: 0 auto;">Un solo plan. Todo incluido. Sin sorpresas.</p>
+
+        <div class="pricing-card">
+            <div class="pricing-label">SIC Completo</div>
+            <div class="pricing-title">Acceso total al sistema</div>
+            <div class="price">
+                <sup>$</sup>40.000<sub>/mes</sub>
+            </div>
+            <ul class="pricing-features" style="margin-top: 2rem;">
+                <li><i class="fas fa-check-circle"></i> Usuarios ilimitados (dueño + empleados)</li>
+                <li><i class="fas fa-check-circle"></i> Control de turnos y caja</li>
+                <li><i class="fas fa-check-circle"></i> Punto de venta</li>
+                <li><i class="fas fa-check-circle"></i> Dashboard en tiempo real</li>
+                <li><i class="fas fa-check-circle"></i> Exportación de reportes PDF</li>
+                <li><i class="fas fa-check-circle"></i> Modo offline con sincronización</li>
+                <li><i class="fas fa-check-circle"></i> Soporte por email</li>
+            </ul>
+            <a href="https://mpago.la/11TL968" class="btn-primary" style="display: block; margin-top: 1.5rem;">
+                <i class="fas fa-credit-card" style="margin-right: 0.5rem;"></i>
+                Suscribirme ahora
+            </a>
+            <p class="pricing-note">El acceso se habilita manualmente dentro de las 24hs de confirmado el pago.</p>
+
+            <div style="margin-top: 1.5rem; padding: 1rem 1.2rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; text-align: left;">
+                <p style="font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 0.6rem;">
+                    <i class="fas fa-info-circle" style="margin-right: 0.3rem;"></i>Aviso legal
+                </p>
+                <p style="font-size: 0.78rem; color: rgba(255,255,255,0.4); line-height: 1.65;">
+                    El SIC es una herramienta de <strong style="color: rgba(255,255,255,0.55);">gestión interna</strong> para comercios.
+                    <strong style="color: rgba(255,255,255,0.55);">No emite facturas fiscales</strong>, no reemplaza sistemas de facturación electrónica
+                    y no se conecta con AFIP/ARCA ni con ningún organismo tributario.
+                    El cumplimiento fiscal es responsabilidad exclusiva del usuario.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contacto" class="contact-section">
+    <div class="container">
+        <div class="section-tag">Contacto</div>
+        <h2 class="section-title">¿Tenés preguntas?</h2>
+        <p class="section-sub" style="margin: 0 auto;">
+            Escribinos y te respondemos a la brevedad.
+        </p>
+        <div class="contact-card">
+            <p>Soporte y consultas</p>
+            <a href="mailto:trikodeingenieria@gmail.com" class="contact-email">
+                <i class="fas fa-envelope"></i>
+                trikodeingenieria@gmail.com
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>
+        &copy; 2026 SIC &mdash; Sistema Interno de Control &nbsp;·&nbsp;
+        <a href="/terminos">Términos de uso</a> &nbsp;·&nbsp;
+        <a href="/privacidad">Privacidad</a>
+    </p>
+</footer>
+
+</body>
+</html>

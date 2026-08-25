@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Trikode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --trikode-blue: #15345f;
+            --trikode-green: #98ce4f;
+            --trikode-cyan: #33d3e7;
+            --trikode-dark: #0b1730;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--trikode-blue) 0%, var(--trikode-dark) 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+        }
+        
+        .estado-activo {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .estado-por-vencer {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .estado-vencido {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .btn-action {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-item {
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(152, 206, 79, 0.22);
+            border-left: 4px solid var(--trikode-green);
+        }
+        
+        .fade-in {
+            animation: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 glass m-4 rounded-xl p-6 flex flex-col">
+            <div class="mb-8">
+                <h1 id="admin-dashboard-fallback" class="text-2xl font-black" style="color: var(--trikode-green);">ADMIN</h1>
+                <p class="text-gray-400 text-sm">Trikode Panel</p>
+            </div>
+            
+            <nav class="flex-1">
+                <div class="sidebar-item active" onclick="showSection('clientes', this)">
+                    <i class="fas fa-users mr-3"></i>Clientes
+                </div>
+                <div class="sidebar-item" onclick="showSection('estadisticas', this)">
+                    <i class="fas fa-chart-bar mr-3"></i>Estadísticas
+                </div>
+                <div class="sidebar-item" onclick="showSection('notificaciones', this)">
+                    <i class="fas fa-bell mr-3"></i>Notificaciones
+                </div>
+                <div class="sidebar-item" onclick="showSection('configuracion', this)">
+                    <i class="fas fa-cog mr-3"></i>Configuración
+                </div>
+            </nav>
+            
+            <div class="border-t border-gray-700 pt-4">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm text-gray-400">Admin</span>
+                    <span class="text-xs text-gray-500" id="adminName">Diego</span>
+                </div>
+                <button onclick="logout()" class="btn-action w-full text-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 m-4">
+            <!-- Header -->
+            <div class="glass rounded-xl p-6 mb-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">Panel de Administración</h2>
+                        <p class="text-gray-400">Gestión de clientes y suscripciones</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-400" id="currentDateTime"></div>
+                        <button onclick="refreshData()" class="btn-action">
+                            <i class="fas fa-sync-alt mr-2"></i>Actualizar
+                        </button>
+                        <button onclick="provisionSuperAdminUser()" class="btn-action ml-2">
+                            <i class="fas fa-user-secret mr-2"></i>Provisionar Usuario 0
+                        </button>
+                    <!-- botón extra de cierre de sesión en el header -->
+                    <button onclick="logout()" class="btn-action ml-2">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                    </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección Clientes -->
+            <div id="clientesSection" class="glass rounded-xl p-6">
+                <!-- Estadísticas Rápidas -->
+                <div class="grid grid-cols-1 md:grid-cols-7 gap-6 mb-8">
+                    <div class="glass p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-green-400" id="totalClientes">0</div>
+                        <div class="text-sm text-gray-400">Total Clientes</div>
+                    </div>
+                    <div class="glass p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-blue-400" id="clientesActivos">0</div>
+                        <div class="text-sm text-gray-400">Activos</div>
+                    </div>
+                    <div class="glass p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-yellow-400" id="clientesPorVencer">0</div>
+                        <div class="text-sm text-gray-400">Por Vencer</div>
+                    </div>
+                    <div class="glass p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-red-400" id="clientesVencidos">0</div>
+                        <div class="text-sm text-gray-400">Vencidos</div>
+                    </div>
+                    <div class="glass p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-purple-400" id="ingresosMensuales">$0</div>
+                        <div class="text-sm text-gray-400">Bruto Mensual</div>
+                    </div>
+                    <div class="glass p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-orange-400" id="comisionesMensuales">$0</div>
+                        <div class="text-sm text-gray-400">Comisiones Vendedores</div>
+                    </div>
+                    <div class="glass p-4 rounded-lg text-center">
+                        <div class="text-3xl font-bold text-emerald-300" id="netoMensual">$0</div>
+                        <div class="text-sm text-gray-400">Neto Trikode</div>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="flex flex-wrap gap-4 mb-6">
+                    <select id="filtroEstado" onchange="filterClients()" class="px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none">
+                        <option value="">Todos los estados</option>
+                        <option value="Activo">Activos</option>
+                        <option value="Por vencer">Por Vencer</option>
+                        <option value="Vencido">Vencidos</option>
+                    </select>
+                    
+                    <select id="filtroRubro" onchange="filterClients()" class="px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none">
+                        <option value="">Todos los rubros</option>
+                        <option value="Kiosco">Kiosco</option>
+                        <option value="Rotisería">Rotisería</option>
+                        <option value="Rotisería/Carrito">Rotisería/Carrito</option>
+                        <option value="Ferretería">Ferretería</option>
+                        <option value="Carnicería">Carnicería</option>
+                        <option value="Carnicería/Verdulería">Carnicería/Verdulería</option>
+                        <option value="Tienda de Mascotas">Tienda de Mascotas</option>
+                        <option value="Librería">Librería</option>
+                    </select>
+
+                    <select id="filtroVendedor" onchange="filterClients()" class="px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none">
+                        <option value="">Todos los vendedores</option>
+                    </select>
+                    
+                    <input type="text" id="busqueda" placeholder="Buscar por nombre o WhatsApp..." 
+                           onkeyup="filterClients()" 
+                           class="px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none flex-1">
+                    
+                    <button onclick="exportData()" class="btn-action">
+                        <i class="fas fa-download mr-2"></i>Exportar
+                    </button>
+                </div>
+                
+                <!-- Tabla de Clientes -->
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left p-4">Comercio</th>
+                                <th class="text-left p-4">Rubro</th>
+                                <th class="text-left p-4">Vendedor</th>
+                                <th class="text-left p-4">Código</th>
+                                <th class="text-left p-4">Plan</th>
+                                <th class="text-left p-4">WhatsApp</th>
+                                <th class="text-left p-4">Estado</th>
+                                <th class="text-left p-4">Días</th>
+                                <th class="text-left p-4">Vencimiento</th>
+                                <th class="text-left p-4">Comisión Mes</th>
+                                <th class="text-center p-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientesTableBody">
+                            <!-- Se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="noClientsMessage" class="hidden text-center py-12 text-gray-400">
+                    <i class="fas fa-users text-6xl mb-4 opacity-50"></i>
+                    <p class="text-xl">No se encontraron clientes</p>
+                    <p class="text-sm mt-2">Intentá con otros filtros de búsqueda</p>
+                </div>
+
+                <div id="statusMessage" class="hidden mt-4 p-4 rounded-lg border border-yellow-500/40 bg-yellow-900/20 text-yellow-200 text-sm"></div>
+            </div>
+            
+            <!-- Otras secciones (ocultas por defecto) -->
+            <div id="estadisticasSection" class="hidden glass rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-6">Estadísticas</h3>
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-chart-line text-6xl mb-4 opacity-50"></i>
+                    <p>Estadísticas en construcción...</p>
+                </div>
+            </div>
+            
+            <div id="notificacionesSection" class="hidden glass rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-6">Historial de Notificaciones</h3>
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-bell text-6xl mb-4 opacity-50"></i>
+                    <p>Historial de notificaciones en construcción...</p>
+                </div>
+            </div>
+            
+            <div id="configuracionSection" class="hidden glass rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-6">Configuración</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold mb-3">Alta o reingreso de código comercial</h4>
+                        <p class="text-xs text-gray-400 mb-4">Tipos disponibles: AV (vendedor), CT (cuerpo técnico), DU (dueño). Comisión: 30% para AV/CT y 0% para DU/DI.</p>
+                        <form id="salesAgentForm" class="space-y-3" onsubmit="createSalesAgent(event)">
+                            <input id="salesAgentNombre" type="text" required minlength="2" placeholder="Nombre del vendedor"
+                                   class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none" />
+                            <label class="text-xs text-gray-300 block">Tipo de código</label>
+                            <select id="salesAgentType" class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none" onchange="syncCommissionByType()">
+                                <option value="AV" selected>AV - Vendedor</option>
+                                <option value="CT">CT - Cuerpo Técnico</option>
+                                <option value="DU">DU - Dueño</option>
+                            </select>
+                            <input id="salesAgentWhatsapp" type="text" placeholder="WhatsApp (opcional)"
+                                   class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none" />
+                            <input id="salesAgentEmail" type="email" placeholder="Email (opcional)"
+                                   class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none" />
+                            <label id="salesAgentCommissionLabel" class="text-xs text-gray-300 block">Comisión mensual (fija por tipo)</label>
+                            <input id="salesAgentCommission" type="number" step="0.01" min="0" max="0.9" value="0.30"
+                                   class="w-full px-3 py-2 rounded bg-gray-800 border border-gray-700 focus:border-green-400 focus:outline-none" />
+                            <button id="salesAgentSubmit" type="submit" class="btn-action w-full text-center">
+                                <i class="fas fa-user-plus mr-2"></i>Crear código
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="glass p-4 rounded-lg">
+                        <h4 class="text-lg font-semibold mb-3">Vendedores registrados</h4>
+                        <div id="salesAgentsStatus" class="hidden mb-3 p-3 rounded border border-cyan-500/40 bg-cyan-900/20 text-cyan-200 text-xs"></div>
+                        <div class="overflow-auto max-h-[420px]">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-700">
+                                        <th class="text-left p-2">Nombre</th>
+                                        <th class="text-left p-2">Código</th>
+                                        <th class="text-left p-2">Tipo</th>
+                                        <th class="text-left p-2">Estado</th>
+                                        <th class="text-left p-2">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesAgentsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let clientesData = [];
+        let salesAgentsData = [];
+
+        // Sanitizar texto para prevenir XSS al insertar en innerHTML
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
+        // Verificar sesión via cookie httpOnly en el servidor
+        async function checkAuth() {
+            try {
+                const res = await fetch('/api/admin-verify', { credentials: 'include' });
+                if (!res.ok) {
+                    window.location.href = '/admin/login.html';
+                    return false;
+                }
+                return true;
+            } catch {
+                window.location.href = '/admin/login.html';
+                return false;
+            }
+        }
+
+        function setStatusMessage(message) {
+            const box = document.getElementById('statusMessage');
+            if (!box) return;
+            if (!message) {
+                box.classList.add('hidden');
+                box.textContent = '';
+                return;
+            }
+            box.textContent = message;
+            box.classList.remove('hidden');
+        }
+
+        function setSalesAgentsStatus(message, isError = false) {
+            const box = document.getElementById('salesAgentsStatus');
+            if (!box) return;
+
+            if (!message) {
+                box.classList.add('hidden');
+                box.textContent = '';
+                box.className = 'hidden mb-3 p-3 rounded border border-cyan-500/40 bg-cyan-900/20 text-cyan-200 text-xs';
+                return;
+            }
+
+            box.className = isError
+                ? 'mb-3 p-3 rounded border border-red-500/40 bg-red-900/20 text-red-200 text-xs'
+                : 'mb-3 p-3 rounded border border-cyan-500/40 bg-cyan-900/20 text-cyan-200 text-xs';
+
+            box.textContent = message;
+            box.classList.remove('hidden');
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+            try {
+                return new Date(value).toLocaleDateString('es-AR');
+            } catch {
+                return '-';
+            }
+        }
+
+        async function loadSalesAgents() {
+            try {
+                const res = await fetch('/api/admin-sales-agents', {
+                    credentials: 'include',
+                    cache: 'no-store'
+                });
+
+                const payload = await res.json().catch(() => null);
+                if (!res.ok || !payload?.ok) {
+                    setSalesAgentsStatus('No se pudo cargar la lista de vendedores.', true);
+                    return;
+                }
+
+                salesAgentsData = Array.isArray(payload.agents) ? payload.agents : [];
+                renderSalesAgents();
+            } catch {
+                setSalesAgentsStatus('Error de conexión cargando vendedores.', true);
+            }
+        }
+
+        function renderSalesAgents() {
+            const tbody = document.getElementById('salesAgentsTableBody');
+            if (!tbody) return;
+
+            if (!salesAgentsData.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-gray-400 text-center">Sin códigos registrados.</td></tr>';
+                return;
+            }
+
+            const getCodeType = (code) => {
+                const match = String(code || '').toUpperCase().match(/^TKI-([A-Z]{2})-/);
+                const type = match ? match[1] : '';
+                if (type === 'CT') return 'CT - Cuerpo Técnico';
+                if (type === 'DU' || type === 'DI') return 'DU - Dueño';
+                if (type === 'AV') return 'AV - Vendedor';
+                return '-';
+            };
+
+            tbody.innerHTML = salesAgentsData.map(agent => {
+                const id = escapeHtml(agent.id);
+                const nombre = escapeHtml(agent.nombre || '-');
+                const refCode = escapeHtml(agent.ref_code || '-');
+                const refType = escapeHtml(getCodeType(agent.ref_code));
+                const isActive = agent.status === 'active';
+                const estado = isActive ? 'Activo' : `Inactivo (${formatDate(agent.inactive_from)})`;
+
+                return `
+                    <tr class="border-b border-gray-800">
+                        <td class="p-2">
+                            <div class="font-semibold">${nombre}</div>
+                            <div class="text-xs text-gray-400">${escapeHtml(agent.email || '')}</div>
+                        </td>
+                        <td class="p-2"><span class="glass px-2 py-1 rounded text-xs">${refCode}</span></td>
+                        <td class="p-2"><span class="text-xs text-slate-300">${refType}</span></td>
+                        <td class="p-2">
+                            <span class="text-xs ${isActive ? 'text-green-300' : 'text-gray-400'}">${estado}</span>
+                        </td>
+                        <td class="p-2">
+                            ${isActive ? `
+                                <button class="btn-action" onclick="deactivateSalesAgent('${id}')" title="Desactivar código">
+                                    <i class="fas fa-user-slash mr-1"></i>Baja
+                                </button>
+                            ` : '<span class="text-xs text-gray-500">Sin acciones</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function createSalesAgent(event) {
+            event.preventDefault();
+
+            const nombre = document.getElementById('salesAgentNombre')?.value?.trim() || '';
+            const referralType = document.getElementById('salesAgentType')?.value || 'AV';
+            const whatsapp = document.getElementById('salesAgentWhatsapp')?.value?.trim() || '';
+            const email = document.getElementById('salesAgentEmail')?.value?.trim() || '';
+            const commissionValue = Number(document.getElementById('salesAgentCommission')?.value || '0.30');
+            const submit = document.getElementById('salesAgentSubmit');
+
+            if (!nombre || nombre.length < 2) {
+                setSalesAgentsStatus('Ingresá un nombre válido para el vendedor.', true);
+                return;
+            }
+
+            try {
+                if (submit) {
+                    submit.disabled = true;
+                    submit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Guardando...';
+                }
+
+                const res = await fetch('/api/admin-sales-agents', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nombre,
+                        referral_type: referralType,
+                        whatsapp,
+                        email,
+                        commission_rate: commissionValue
+                    })
+                });
+
+                const payload = await res.json().catch(() => null);
+                if (!res.ok || !payload?.ok) {
+                    if (payload?.error === 'active_agent_exists') {
+                        setSalesAgentsStatus('Ya existe un vendedor activo con ese nombre.', true);
+                    } else {
+                        setSalesAgentsStatus('No se pudo guardar el vendedor.', true);
+                    }
+                    return;
+                }
+
+                const generatedCode = payload?.ref_code || '-';
+                const modeLabel = payload?.mode === 'rejoined' ? 'Código reactivado' : 'Código creado';
+                setSalesAgentsStatus(`${modeLabel}. Código asignado: ${generatedCode}`);
+
+                const form = document.getElementById('salesAgentForm');
+                if (form) form.reset();
+                const commissionInput = document.getElementById('salesAgentCommission');
+                if (commissionInput) commissionInput.value = '0.30';
+                const typeInput = document.getElementById('salesAgentType');
+                if (typeInput) typeInput.value = 'AV';
+                syncCommissionByType();
+
+                await loadSalesAgents();
+            } catch {
+                setSalesAgentsStatus('Error de conexión guardando vendedor.', true);
+            } finally {
+                if (submit) {
+                    submit.disabled = false;
+                    submit.innerHTML = '<i class="fas fa-user-plus mr-2"></i>Crear código';
+                }
+            }
+        }
+
+        function syncCommissionByType() {
+            const type = document.getElementById('salesAgentType')?.value || 'AV';
+            const commissionInput = document.getElementById('salesAgentCommission');
+            const commissionLabel = document.getElementById('salesAgentCommissionLabel');
+            if (!commissionInput || !commissionLabel) return;
+
+            if (type === 'DU') {
+                commissionInput.value = '0';
+                commissionInput.disabled = true;
+                commissionLabel.textContent = 'Comisión mensual (DU/DI = 0)';
+            } else {
+                commissionInput.value = '0.30';
+                commissionInput.disabled = true;
+                commissionLabel.textContent = 'Comisión mensual (AV/CT = 0.30)';
+            }
+        }
+
+        async function deactivateSalesAgent(id) {
+            if (!id) return;
+            const ok = confirm('¿Seguro que querés dar de baja este vendedor? El código quedará inactivo.');
+            if (!ok) return;
+
+            try {
+                const res = await fetch('/api/admin-sales-agents', {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id, action: 'deactivate' })
+                });
+
+                const payload = await res.json().catch(() => null);
+                if (!res.ok || !payload?.ok) {
+                    setSalesAgentsStatus('No se pudo dar de baja el vendedor.', true);
+                    return;
+                }
+
+                setSalesAgentsStatus('Vendedor dado de baja. Si reingresa, se le asignará un código nuevo.');
+                await loadSalesAgents();
+            } catch {
+                setSalesAgentsStatus('Error de conexión al dar de baja vendedor.', true);
+            }
+        }
+        
+        // Cargar clientes desde API server-side protegida
+        async function loadClients() {
+            try {
+                const res = await fetch('/api/admin-leads', {
+                    credentials: 'include',
+                    cache: 'no-store'
+                });
+
+                let payload = null;
+                try {
+                    payload = await res.json();
+                } catch {
+                    payload = null;
+                }
+
+                if (!res.ok) {
+                    if (res.status === 503 && payload?.error === 'server_not_configured') {
+                        setStatusMessage('Falta configurar Supabase en variables de entorno del servidor para ver clientes reales.');
+                    } else {
+                        setStatusMessage('No se pudo cargar la lista de clientes. Reintentá en unos segundos.');
+                    }
+                    throw new Error('No se pudieron cargar clientes');
+                }
+
+                const clientes = Array.isArray(payload?.clientes) ? payload.clientes : [];
+                const ownerPendingCount = clientes.filter(cliente => cliente.owner_activation_needs_attention).length;
+
+                clientesData = clientes;
+                updateStatistics();
+                renderClients(clientes);
+
+                if (ownerPendingCount > 0) {
+                    setStatusMessage(`Hay ${ownerPendingCount} comercio${ownerPendingCount === 1 ? '' : 's'} pago${ownerPendingCount === 1 ? '' : 's'} con activación OWNER pendiente o incompleta.`);
+                } else {
+                    setStatusMessage('');
+                }
+            } catch (error) {
+                console.error('Error cargando clientes:', error);
+                clientesData = [];
+                updateStatistics();
+                renderClients([]);
+            }
+        }
+        
+        // Actualizar estadísticas
+        function updateStatistics() {
+            const total = clientesData.length;
+            const activos = clientesData.filter(c => c.estado === 'Activo').length;
+            const porVencer = clientesData.filter(c => c.estado === 'Por vencer').length;
+            const vencidos = clientesData.filter(c => c.estado === 'Vencido').length;
+            const baseMensual = clientesData.filter(c => c.estado !== 'Vencido');
+            const ingresosMensuales = baseMensual.reduce((acc, c) => acc + (Number(c.precio_mensual) || 40000), 0);
+            const comisionesMensuales = baseMensual.reduce((acc, c) => acc + (Number(c.comision_mensual) || 0), 0);
+            const netoMensual = Math.max(0, ingresosMensuales - comisionesMensuales);
+            
+            document.getElementById('totalClientes').textContent = total;
+            document.getElementById('clientesActivos').textContent = activos;
+            document.getElementById('clientesPorVencer').textContent = porVencer;
+            document.getElementById('clientesVencidos').textContent = vencidos;
+            
+            // Agregar estadística de ingresos si existe el elemento
+            const ingresosElement = document.getElementById('ingresosMensuales');
+            if (ingresosElement) {
+                ingresosElement.textContent = `$${ingresosMensuales.toLocaleString('es-AR')}`;
+            }
+
+            const comisionesElement = document.getElementById('comisionesMensuales');
+            if (comisionesElement) {
+                comisionesElement.textContent = `$${comisionesMensuales.toLocaleString('es-AR')}`;
+            }
+
+            const netoElement = document.getElementById('netoMensual');
+            if (netoElement) {
+                netoElement.textContent = `$${netoMensual.toLocaleString('es-AR')}`;
+            }
+
+            const uniqueVendedores = Array.from(new Set(
+                clientesData
+                    .map(c => (c.vendedor_nombre || '').trim())
+                    .filter(Boolean)
+            ));
+            const select = document.getElementById('filtroVendedor');
+            if (select) {
+                const current = select.value;
+                select.innerHTML = '<option value="">Todos los vendedores</option>' +
+                    uniqueVendedores
+                        .sort((a, b) => a.localeCompare(b, 'es'))
+                        .map(nombre => `<option value="${escapeHtml(nombre)}">${escapeHtml(nombre)}</option>`)
+                        .join('');
+                select.value = uniqueVendedores.includes(current) ? current : '';
+            }
+        }
+        
+        // Renderizar clientes en tabla
+        function renderClients(clientes) {
+            const tbody = document.getElementById('clientesTableBody');
+            const noMessage = document.getElementById('noClientsMessage');
+            
+            if (clientes.length === 0) {
+                tbody.innerHTML = '';
+                noMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noMessage.classList.add('hidden');
+            
+            tbody.innerHTML = clientes.map(cliente => {
+                const nombre = escapeHtml(cliente.nombre_comercio);
+                const email = escapeHtml(cliente.email);
+                const rubro = escapeHtml(cliente.rubro);
+                const wsp = escapeHtml(cliente.whatsapp);
+                const estado = escapeHtml(cliente.estado);
+                const vendedor = escapeHtml(cliente.vendedor_nombre || 'Sin vendedor');
+                const vendedorCodigo = escapeHtml(cliente.vendedor_codigo || '-');
+                const comisionMensual = Number(cliente.comision_mensual) || 0;
+                const estadoClass = escapeHtml(cliente.estado.toLowerCase().replace(' ', '-'));
+                const dias = Number(cliente.dias_transcurridos) || 0;
+                const diasClass = dias > 30 ? 'text-red-400' : dias === 30 ? 'text-yellow-400' : 'text-green-400';
+                const vencimiento = new Date(cliente.fecha_vencimiento).toLocaleDateString('es-AR');
+                const clienteId = escapeHtml(String(cliente.id));
+                const wspMsg = encodeURIComponent(`Hola ${cliente.nombre_comercio}, soy Diego de Trikode. Te contacto por tu suscripción.`);
+                const ownerActivationLabel = escapeHtml(cliente.owner_activation_label || 'Activación OWNER pendiente');
+                const ownerActivationDetail = cliente.owner_activation_detail
+                    ? escapeHtml(cliente.owner_activation_detail)
+                    : '';
+                const ownerInviteAttempts = Number(cliente.owner_invite_attempts) || 0;
+                const ownerLastInviteAt = cliente.owner_last_invite_at
+                    ? new Date(cliente.owner_last_invite_at).toLocaleString('es-AR')
+                    : '';
+                const ownerLastInviteState = cliente.owner_last_invite_status === 'sent'
+                    ? 'Último reenvío correcto'
+                    : cliente.owner_last_invite_status === 'failed'
+                        ? 'Último reenvío fallido'
+                        : '';
+                const ownerLastInviteError = cliente.owner_last_invite_error
+                    ? escapeHtml(cliente.owner_last_invite_error)
+                    : '';
+                const ownerInviteHistory = ownerInviteAttempts > 0
+                    ? `
+                        <div class="mt-2 text-[11px] text-yellow-100/80">
+                            ${ownerLastInviteState ? `<div>${escapeHtml(ownerLastInviteState)}${ownerLastInviteAt ? ` · ${escapeHtml(ownerLastInviteAt)}` : ''}</div>` : ''}
+                            <div>Intentos registrados: ${ownerInviteAttempts}</div>
+                            ${ownerLastInviteError ? `<div class="mt-1 text-red-200/90">${ownerLastInviteError}</div>` : ''}
+                        </div>
+                    `
+                    : '';
+                const ownerActivationWarning = cliente.owner_activation_needs_attention
+                    ? `
+                        <div class="mt-2 inline-flex items-center gap-2 rounded-full border border-yellow-500/40 bg-yellow-900/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-yellow-200">
+                            <i class="fas fa-user-shield"></i>
+                            <span>${ownerActivationLabel}</span>
+                        </div>
+                        ${ownerActivationDetail ? `<div class="mt-2 text-xs text-yellow-100/90">${ownerActivationDetail}</div>` : ''}
+                        ${ownerInviteHistory}
+                        ${cliente.email ? `
+                            <button
+                                data-cliente-id="${clienteId}"
+                                onclick="resendOwnerInvite(this.dataset.clienteId, this)"
+                                class="btn-action mt-2"
+                                title="Reenviar activación OWNER"
+                            >
+                                <i class="fas fa-paper-plane mr-2"></i>Reenviar activación
+                            </button>
+                        ` : ''}
+                    `
+                    : '';
+
+                return `
+                <tr class="border-b border-gray-800 hover:bg-gray-800 hover:bg-opacity-30 transition-colors">
+                    <td class="p-4">
+                        <div>
+                            <div class="font-semibold">${nombre}</div>
+                            ${email ? `<div class="text-xs text-gray-400">${email}</div>` : ''}
+                            ${ownerActivationWarning}
+                            <!-- Badge Modo Trial -->
+                            ${(() => {
+                                // Consideramos trial si está ACTIVO y faltan 7 días o menos para el vencimiento
+                                const hoy = new Date();
+                                const venc = new Date(cliente.fecha_vencimiento);
+                                const diff = Math.ceil((venc.setHours(0,0,0,0) - hoy.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+                                if (cliente.estado === 'Activo' && diff <= 7 && diff > 0) {
+                                    return `<span class='inline-flex items-center gap-2 rounded-full border border-orange-400 bg-orange-900/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-orange-200 mt-2'><i class='fas fa-hourglass-half'></i>Modo Trial (${diff} días)</span>`;
+                                }
+                                return '';
+                            })()}
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <span class="glass px-2 py-1 rounded text-xs">${rubro}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-sm">${vendedor}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="glass px-2 py-1 rounded text-xs">${vendedorCodigo}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="glass px-2 py-1 rounded text-xs">Trikode Completo</span>
+                    </td>
+                    <td class="p-4">
+                        <a href="https://wa.me/549${wsp}" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300">
+                            ${wsp}
+                        </a>
+                    </td>
+                    <td class="p-4">
+                        <span class="estado-${estadoClass}">${estado}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="${diasClass}">${dias} días</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-sm text-gray-400">${vencimiento}</span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-sm ${comisionMensual > 0 ? 'text-orange-300' : 'text-gray-500'}">$${comisionMensual.toLocaleString('es-AR')}</span>
+                    </td>
+                    <td class="p-4 text-center">
+                        <div class="flex gap-2 justify-center">
+                            <a href="https://wa.me/549${wsp}?text=${wspMsg}"
+                               target="_blank" rel="noopener noreferrer"
+                               class="btn-action" title="Contactar por WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            ${email ? `
+                                <a href="mailto:${email}?subject=Trikode%20-%20Tu%20suscripci%C3%B3n"
+                                   class="btn-action" title="Enviar Email">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                            ` : ''}
+                            <button data-cliente-id="${clienteId}" onclick="viewClientDetails(this.dataset.clienteId)" class="btn-action" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+        
+        // Filtrar clientes
+        function filterClients() {
+            const estado = document.getElementById('filtroEstado').value;
+            const rubro = document.getElementById('filtroRubro').value;
+            const vendedor = document.getElementById('filtroVendedor').value;
+            const busqueda = document.getElementById('busqueda').value.toLowerCase();
+            
+            let filtered = clientesData;
+            
+            if (estado) {
+                filtered = filtered.filter(c => c.estado === estado);
+            }
+            
+            if (rubro) {
+                filtered = filtered.filter(c => c.rubro === rubro);
+            }
+
+            if (vendedor) {
+                filtered = filtered.filter(c => (c.vendedor_nombre || '') === vendedor);
+            }
+            
+            if (busqueda) {
+                filtered = filtered.filter(c => 
+                    (c.nombre_comercio || '').toLowerCase().includes(busqueda) ||
+                    (c.whatsapp || '').includes(busqueda) ||
+                    (c.vendedor_codigo || '').toLowerCase().includes(busqueda)
+                );
+            }
+            
+            renderClients(filtered);
+        }
+        
+        // Mostrar sección
+        function showSection(section, element) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('[id$="Section"]').forEach(s => s.classList.add('hidden'));
+            
+            // Mostrar sección seleccionada
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            // Actualizar sidebar
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            if (element) {
+                element.classList.add('active');
+            }
+
+            if (section === 'configuracion') {
+                loadSalesAgents();
+            }
+        }
+        
+        // Refrescar datos de clientes
+        async function refreshData() {
+            await loadClients();
+            await loadSalesAgents();
+        }
+
+        async function provisionSuperAdminUser() {
+            try {
+                setStatusMessage('Provisionando Usuario 0 de auditoría...');
+                const res = await fetch('/api/admin-provision-superadmin', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                const payload = await res.json().catch(() => null);
+                if (!res.ok) {
+                    if (payload?.error === 'server_not_configured') {
+                        throw new Error('Faltan variables de entorno para provisionar el SuperAdmin de auditoría.');
+                    }
+                    throw new Error('No se pudo provisionar el Usuario 0 de auditoría.');
+                }
+
+                const email = payload?.email || 'test@trikode.com.ar';
+                setStatusMessage(`SuperAdmin listo: ${email}. Ya podés entrar al SIC con esa credencial y acceder a Dueño y Empleado.`);
+            } catch (error) {
+                setStatusMessage(error instanceof Error ? error.message : 'No se pudo provisionar el Usuario 0 de auditoría.');
+            }
+        }
+
+        async function resendOwnerInvite(clienteId, button) {
+            if (!clienteId) {
+                setStatusMessage('No se pudo identificar el comercio para reenviar la activación.');
+                return;
+            }
+
+            const originalContent = button ? button.innerHTML : '';
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Reenviando...';
+                button.style.opacity = '0.65';
+                button.style.cursor = 'wait';
+            }
+
+            try {
+                const res = await fetch('/api/admin-owner-invite', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ leadId: clienteId })
+                });
+
+                const payload = await res.json().catch(() => null);
+
+                if (!res.ok) {
+                    const errorCode = payload?.error || 'unexpected';
+                    if (errorCode === 'owner_email_missing') {
+                        throw new Error('El comercio no tiene un email válido para activar al OWNER.');
+                    }
+                    if (errorCode === 'commerce_not_found') {
+                        throw new Error('El pago existe, pero todavía no se encontró el comercio dado de alta para este lead.');
+                    }
+                    if (errorCode === 'lead_not_paid') {
+                        throw new Error('Solo se puede reenviar la activación en comercios con pago aprobado.');
+                    }
+                    if (errorCode === 'invite_failed') {
+                        throw new Error('No se pudo reenviar la invitación automática. Revisá Supabase y reintentá.');
+                    }
+                    throw new Error('No se pudo reenviar la activación OWNER.');
+                }
+
+                await loadClients();
+                const successMessage = payload?.result === 'already_ready'
+                    ? 'El OWNER ya estaba vinculado. El estado del comercio fue normalizado en el panel.'
+                    : 'La activación del OWNER fue reenviada correctamente.';
+                setStatusMessage(successMessage);
+            } catch (error) {
+                setStatusMessage(error instanceof Error ? error.message : 'No se pudo reenviar la activación OWNER.');
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalContent;
+                    button.style.opacity = '';
+                    button.style.cursor = '';
+                }
+            }
+        }
+        
+        // Exportar datos
+        function exportData() {
+            const csvContent = [
+                ['Comercio', 'Rubro', 'Vendedor', 'Codigo Vendedor', 'Plan', 'WhatsApp', 'Email', 'Estado', 'Dias', 'Vencimiento', 'Precio Mensual', 'Comision Vendedor', 'Neto Trikode'],
+                ...clientesData.map(c => [
+                    c.nombre_comercio,
+                    c.rubro,
+                    c.vendedor_nombre || '',
+                    c.vendedor_codigo || '',
+                    'Trikode Completo',
+                    c.whatsapp,
+                    c.email || '',
+                    c.estado,
+                    c.dias_transcurridos,
+                    new Date(c.fecha_vencimiento).toLocaleDateString('es-AR'),
+                    `$${(Number(c.precio_mensual) || 40000).toLocaleString('es-AR')}`,
+                    `$${(Number(c.comision_mensual) || 0).toLocaleString('es-AR')}`,
+                    `$${(Number(c.ingreso_neto_mensual) || 0).toLocaleString('es-AR')}`
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `clientes_trikode_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+        
+        // Ver detalles del cliente
+        function viewClientDetails(clienteId) {
+            const cliente = clientesData.find(c => c.id === clienteId);
+            if (cliente) {
+                const lastInviteAt = cliente.owner_last_invite_at
+                    ? new Date(cliente.owner_last_invite_at).toLocaleString('es-AR')
+                    : 'Sin registros';
+                const lastInviteStatus = cliente.owner_last_invite_status === 'sent'
+                    ? 'Correcto'
+                    : cliente.owner_last_invite_status === 'failed'
+                        ? 'Fallido'
+                        : 'Sin registros';
+                alert(`Detalles de ${cliente.nombre_comercio}:\n\n` +
+                      `Rubro: ${cliente.rubro}\n` +
+                        `Vendedor: ${cliente.vendedor_nombre || 'Sin vendedor'}\n` +
+                        `Código vendedor: ${cliente.vendedor_codigo || '-'}\n` +
+                        `Plan: Trikode Completo\n` +
+                      `WhatsApp: ${cliente.whatsapp}\n` +
+                      `Email: ${cliente.email || 'No especificado'}\n` +
+                      `Estado: ${cliente.estado}\n` +
+                                                `Activación OWNER: ${cliente.owner_activation_label || 'OK'}\n` +
+                                                `Intentos OWNER: ${Number(cliente.owner_invite_attempts) || 0}\n` +
+                                                `Último intento OWNER: ${lastInviteStatus} · ${lastInviteAt}\n` +
+                                                `${cliente.owner_last_invite_error ? `Error último intento: ${cliente.owner_last_invite_error}\n` : ''}` +
+                        `Comisión mes: $${(Number(cliente.comision_mensual) || 0).toLocaleString('es-AR')}\n` +
+                      `Días: ${cliente.dias_transcurridos}\n` +
+                      `Vencimiento: ${new Date(cliente.fecha_vencimiento).toLocaleDateString('es-AR')}`);
+            }
+        }
+        
+        // Logout: invalida la cookie httpOnly en el servidor
+        async function logout() {
+            try {
+                await fetch('/api/admin-logout', { method: 'POST', credentials: 'include' });
+            } catch { /* continúa aunque falle la petición */ }
+            window.location.href = '/admin/login.html';
+        }
+        
+        // atajo por teclado: CTRL+L para cerrar sesión
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key.toLowerCase() === 'l') {
+                logout();
+            }
+        });
+        
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('currentDateTime').textContent = 
+                now.toLocaleDateString('es-AR') + ' ' + now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!(await checkAuth())) return;
+
+            syncCommissionByType();
+
+            // Cargar datos
+            await loadClients();
+            
+            // Actualizar fecha/hora
+            updateDateTime();
+            setInterval(updateDateTime, 30000);
+            
+            // Sin auto-refresh para evitar flashes/re-renderes involuntarios en web.
+        });
+    </script>
+</body>
+</html>

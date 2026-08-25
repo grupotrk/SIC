@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - SIC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --trikode-blue: #15345f;
+            --trikode-green: #98ce4f;
+            --trikode-cyan: #33d3e7;
+            --trikode-dark: #0b1730;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--trikode-blue) 0%, var(--trikode-dark) 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--trikode-green), var(--trikode-cyan));
+            color: #0b1730;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(51, 211, 231, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(51, 211, 231, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .shake {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center px-6">
+        <div class="w-full max-w-md">
+            <!-- Logo y Header -->
+            <div class="text-center mb-8 fade-in">
+                <div class="text-4xl font-black mb-2" style="color: var(--trikode-green);">
+                    SIC
+                </div>
+                <p class="text-gray-300">Panel de Administración</p>
+            </div>
+            
+            <!-- Login Form -->
+            <div class="glass p-8 rounded-xl fade-in">
+                <form id="loginForm" onsubmit="handleLogin(event); return false;">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">Usuario</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="username"
+                                   name="username" 
+                                   required
+                                   value="admin"
+                                   class="w-full px-4 py-3 pl-10 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none"
+                                   style="--tw-ring-color: rgba(152,206,79,0.5);">
+                            <i class="fas fa-user absolute left-3 top-4 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">Contraseña</label>
+                        <div class="relative">
+                            <input type="password" 
+                                   id="password"
+                                   name="password" 
+                                   required
+                                   placeholder="•••••••••"
+                                   class="w-full px-4 py-3 pl-10 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none"
+                                   style="--tw-ring-color: rgba(152,206,79,0.5);">
+                            <i class="fas fa-lock absolute left-3 top-4 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="remember" class="mr-2">
+                            <span class="text-sm text-gray-300">Recordar sesión</span>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" id="loginBtn" class="btn-primary w-full mb-4">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Ingresar al Panel
+                    </button>
+                    
+                    <div class="text-center">
+                        <a href="mailto:trikodeingenieria@gmail.com?subject=Recuperar%20contraseña%20Admin%20Trikode" class="btn-secondary w-full">
+                            <i class="fas fa-key mr-2"></i>¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+                </form>
+                
+                <!-- Mensaje de error -->
+                <div id="errorMessage" class="hidden mt-4 p-4 bg-red-900 bg-opacity-50 border border-red-500 rounded-lg">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span id="errorText"></span>
+                </div>
+                
+                <!-- Información de seguridad -->
+                <div class="mt-6 p-4 bg-gray-800 bg-opacity-50 rounded-lg border border-gray-700">
+                    <p class="text-xs text-gray-400 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>Información de seguridad:</strong>
+                    </p>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li>• Máximo 5 intentos permitidos</li>
+                        <li>• Bloqueo temporal después de intentos fallidos</li>
+                        <li>• Sesión expira después de 24 horas</li>
+                        <li>• Acceso monitoreado y registrado</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-8 text-gray-400 text-sm">
+                <p>&copy; 2026 SIC &mdash; Panel Administrativo</p>
+                <p class="text-xs mt-1">Acceso restringido y monitoreado</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let loginAttempts = 0;
+        const MAX_ATTEMPTS = 5;
+        let blocked = false;
+
+        // Función de login — validación server-side via API de Next.js
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            if (blocked) return;
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Verificando...';
+
+            try {
+                const response = await fetch('/api/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    window.location.href = '/admin/dashboard.html';
+                    return;
+                }
+
+                loginAttempts++;
+                document.getElementById('loginForm').classList.add('shake');
+                setTimeout(() => document.getElementById('loginForm').classList.remove('shake'), 500);
+
+                if (loginAttempts >= MAX_ATTEMPTS) {
+                    blocked = true;
+                    showError('Demasiados intentos fallidos. Por favor espera unos minutos antes de volver a intentar.');
+                    loginBtn.disabled = true;
+                    loginBtn.innerHTML = '<i class="fas fa-lock mr-2"></i>Bloqueado';
+                    return;
+                }
+
+                showError(`Usuario o contraseña incorrectos. Intento ${loginAttempts} de ${MAX_ATTEMPTS}.`);
+
+            } catch {
+                showError('Error de conexión. Verifica tu acceso a internet.');
+            } finally {
+                if (!blocked) {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i>Ingresar al Panel';
+                }
+            }
+        }
+        
+        // Mostrar error
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            errorText.textContent = message;
+            errorMsg.classList.remove('hidden');
+            setTimeout(() => errorMsg.classList.add('hidden'), 6000);
+        }
+
+        // Verificar si ya hay sesión activa via cookie httpOnly
+        async function checkExistingSession() {
+            try {
+                const res = await fetch('/api/admin-verify', { credentials: 'include' });
+                if (res.ok) {
+                    window.location.href = '/admin/dashboard.html';
+                }
+            } catch {
+                // Sin sesión activa, no redirigir
+            }
+        }
+
+        // Al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            checkExistingSession();
+        });
+    </script>
+</body>
+</html>
