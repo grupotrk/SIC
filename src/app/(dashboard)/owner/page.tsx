@@ -13,13 +13,21 @@ import ProductsManager from '@/components/owner/ProductsManager'
 import EmployeesManager from '@/components/owner/EmployeesManager'
 import SubscriptionFeedback from '@/components/owner/SubscriptionFeedback'
 import AppShell from '@/components/AppShell'
+import AppLoadingScreen from '@/components/AppLoadingScreen'
 
 export default function OwnerPage() {
   const router = useRouter()
   const { userRole, loading: roleLoading } = useUserRole()
   
   const [loading, setLoading] = useState(true)
+  const [minimumLoadingDone, setMinimumLoadingDone] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+
+  // Evita flashes entre rutas y permite que la pantalla de marca se perciba.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMinimumLoadingDone(true), 2000)
+    return () => window.clearTimeout(timer)
+  }, [])
   const [subscription, setSubscription] = useState<SubscriptionComputed | null>(null)
   const [mensaje, setMensaje] = useState<{ tipo: 'error' | 'success'; texto: string } | null>(null)
 
@@ -70,12 +78,12 @@ export default function OwnerPage() {
     }
   }
 
-  if (loading || roleLoading) return <div className="min-h-screen bg-slate-100 p-4 text-slate-600">Cargando...</div>
+  if (loading || roleLoading || !minimumLoadingDone) return <AppLoadingScreen title="Preparando el panel" subtitle="Cargando el resumen, catálogo y equipo del comercio…" />
 
   return (
     <AppShell
-      title="Panel de control"
-      subtitle="Resumen operativo del comercio"
+      title="Panel del Dueño"
+      subtitle="Operación, catálogo y equipo en un solo lugar"
       badge={userRole?.email === 'test@trikode.com.ar' ? 'DEMO / AUDIT' : undefined}
       onLogout={cerrarSesion}
       loggingOut={loggingOut}

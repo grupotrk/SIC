@@ -12,6 +12,8 @@ interface EmpleadoEnVivo {
   total_vendido: number
   total_efectivo: number
   total_tarjeta: number
+  total_transferencia: number
+  total_mercado_pago: number
 }
 
 interface ResumenDiario {
@@ -19,6 +21,8 @@ interface ResumenDiario {
   total_general: number
   total_efectivo: number
   total_tarjeta: number
+  total_transferencia: number
+  total_mercado_pago: number
 }
 
 interface OfflinePriceConflictItem {
@@ -45,6 +49,7 @@ export default function DashboardStats({ subscription }: Props) {
   const { userRole } = useUserRole()
   const [empleados, setEmpleados] = useState<EmpleadoEnVivo[]>([])
   const [resumen, setResumen] = useState<ResumenDiario | null>(null)
+  const [cierreRealizado, setCierreRealizado] = useState(false)
   const [offlinePriceConflicts, setOfflinePriceConflicts] = useState<OfflinePriceConflictSale[]>([])
   const [exportingPdf, setExportingPdf] = useState(false)
   const [mensaje, setMensaje] = useState<{ tipo: 'error' | 'success' | 'info'; texto: string } | null>(null)
@@ -98,6 +103,23 @@ export default function DashboardStats({ subscription }: Props) {
         console.error('Error cargando resumen_cierre_diario:', resError)
       } else {
         setResumen((resumenData as ResumenDiario) ?? null)
+      }
+
+      // El resumen diario existe aunque la jornada siga abierta.
+      // El estado de cierre se determina SOLO por cierres_diarios + fecha_operativa.
+      const { data: cierreData, error: cierreError } = await supabase
+        .from('cierres_diarios')
+        .select('id')
+        .eq('tenant_id', userRole.tenantId)
+        .eq('fecha_operativa', today)
+        .limit(1)
+        .maybeSingle()
+
+      if (cierreError) {
+        console.error('Error verificando cierre del día:', cierreError)
+        setCierreRealizado(false)
+      } else {
+        setCierreRealizado(Boolean(cierreData))
       }
 
       const { data: conflictData, error: conflictError } = await supabase
@@ -219,7 +241,6 @@ export default function DashboardStats({ subscription }: Props) {
     }
   }
 
-  const cierreRealizado = Boolean(resumen)
   const cierreBloqueado = subscription?.accessMode !== 'FULL' || cierreRealizado
 
   return (
@@ -245,6 +266,14 @@ export default function DashboardStats({ subscription }: Props) {
           <strong>${resumen?.total_tarjeta?.toFixed(2) || '0.00'}</strong>
         </div>
         <div className="metric-card">
+          <div><span className="metric-label">Transferencias</span><small>Transferencias bancarias</small></div>
+          <strong>${resumen?.total_transferencia?.toFixed(2) || '0.00'}</strong>
+        </div>
+        <div className="metric-card">
+          <div><span className="metric-label">Billetera / QR</span><small>Pagos digitales</small></div>
+          <strong>${resumen?.total_mercado_pago?.toFixed(2) || '0.00'}</strong>
+        </div>
+        <div className="metric-card">
           <div><span className="metric-label">Transacciones</span><small>Operaciones registradas</small></div>
           <strong>{resumen?.total_ventas || 0}</strong>
         </div>
@@ -264,7 +293,7 @@ export default function DashboardStats({ subscription }: Props) {
                 <article key={emp.comercio_usuario_id} className="employee-live-row">
                   <div className="employee-avatar">{emp.empleado_nombre?.slice(0,1).toUpperCase()}</div>
                   <div className="employee-live-main"><strong>{emp.empleado_nombre}</strong><span>{emp.ventas_completadas} ventas</span></div>
-                  <div className="employee-live-total"><strong>${emp.total_vendido?.toFixed(2)}</strong><span>${emp.total_efectivo?.toFixed(2)} ef. · ${emp.total_tarjeta?.toFixed(2)} tarj.</span></div>
+                  <div className="employee-live-total"><strong>${emp.total_vendido?.toFixed(2)}</strong><span>${emp.total_efectivo?.toFixed(2)} ef. · ${emp.total_tarjeta?.toFixed(2)} tarj. · ${emp.total_transferencia?.toFixed(2)} transf. · ${emp.total_mercado_pago?.toFixed(2)} digital</span></div>
                 </article>
               ))}
             </div>

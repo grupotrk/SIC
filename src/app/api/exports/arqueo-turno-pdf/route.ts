@@ -39,7 +39,7 @@ async function buildArqueoPdf(selectedDate: string, payload: {
     ['Total efectivo', `$${payload.totalEfectivo.toFixed(2)}`],
     ['Total tarjeta', `$${payload.totalTarjeta.toFixed(2)}`],
     ['Total transferencia', `$${payload.totalTransferencia.toFixed(2)}`],
-    ['Total mercado pago', `$${payload.totalMercadoPago.toFixed(2)}`],
+    ['Total billetera / QR', `$${payload.totalMercadoPago.toFixed(2)}`],
   ]
 
   let y = 715
@@ -92,7 +92,7 @@ export async function GET(req: Request) {
       roleError ||
       !comercioUsuario ||
       !comercioUsuario.activo ||
-      (comercioUsuario.rol !== 'EMPLOYEE' && !isSuperAdmin)
+      (comercioUsuario.rol !== 'EMPLOYEE' && comercioUsuario.rol !== 'OWNER' && !isSuperAdmin)
     ) {
       return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 })
     }
@@ -137,7 +137,7 @@ export async function GET(req: Request) {
         if (v.metodo_pago === 'EFECTIVO') acc.totalEfectivo += total
         if (v.metodo_pago === 'TARJETA') acc.totalTarjeta += total
         if (v.metodo_pago === 'TRANSFERENCIA') acc.totalTransferencia += total
-        if (v.metodo_pago === 'MERCADO_PAGO') acc.totalMercadoPago += total
+        if (v.metodo_pago === 'MERCADO_PAGO' || v.metodo_pago === 'BILLETERA' || v.metodo_pago === 'QR') acc.totalMercadoPago += total
         return acc
       },
       {

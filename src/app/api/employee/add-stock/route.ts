@@ -69,6 +69,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     return NextResponse.json({
+      ok: true,
       success: true,
       nuevoStock,
       mensaje: `Stock de "${producto.nombre}" actualizado a ${nuevoStock}`,

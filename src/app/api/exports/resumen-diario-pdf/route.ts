@@ -32,7 +32,7 @@ async function buildResumenPdf(selectedDate: string, resumen: Record<string, unk
     ['Total efectivo', `$${resumen.total_efectivo ?? 0}`],
     ['Total tarjeta', `$${resumen.total_tarjeta ?? 0}`],
     ['Total transferencia', `$${resumen.total_transferencia ?? 0}`],
-    ['Total mercado pago', `$${resumen.total_mercado_pago ?? 0}`],
+    ['Total billetera / QR', `$${resumen.total_mercado_pago ?? 0}`],
   ]
 
   let y = 730

@@ -347,23 +347,29 @@ export default function PointOfSale({
                 </span>
               </div>
 
-              <div className="space-y-2">
-                <button
-                  onClick={() => completarVenta('EFECTIVO')}
-                  disabled={cart.length === 0 || subscription?.accessMode !== 'FULL'}
-                  className="w-full rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition hover:bg-slate-700 disabled:opacity-40"
-                >
-                  Efectivo
-                </button>
-                <button
-                  onClick={() => completarVenta('TARJETA')}
-                  disabled={cart.length === 0 || subscription?.accessMode !== 'FULL'}
-                  className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-40"
-                >
-                  Tarjeta
-                </button>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'EFECTIVO', label: 'Efectivo', icon: '💵' },
+                  { value: 'TARJETA', label: 'Tarjeta', icon: '💳' },
+                  { value: 'TRANSFERENCIA', label: 'Transferencia', icon: '⇄' },
+                  { value: 'BILLETERA', label: 'Billetera', icon: '◉' },
+                  { value: 'QR', label: 'QR', icon: '▦' },
+                ].map((medio) => (
+                  <button
+                    key={medio.value}
+                    onClick={() => completarVenta(medio.value)}
+                    disabled={cart.length === 0 || subscription?.accessMode !== 'FULL'}
+                    className={`rounded-lg border px-3 py-2 text-xs font-bold transition disabled:opacity-40 ${
+                      medio.value === 'EFECTIVO'
+                        ? 'col-span-2 border-slate-800 bg-slate-900 text-white hover:bg-slate-700'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:bg-emerald-50'
+                    }`}
+                  >
+                    <span className="mr-1.5" aria-hidden>{medio.icon}</span>{medio.label}
+                  </button>
+                ))}
                 {cart.length > 0 && (
-                  <button onClick={() => setCart([])} className="w-full rounded-xl bg-slate-100 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-200">
+                  <button onClick={() => setCart([])} className="col-span-2 rounded-lg bg-slate-100 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-200">
                     Vaciar carrito
                   </button>
                 )}

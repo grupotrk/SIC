@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import ProductImportModal from './ProductImportModal'
 
 type Producto = {
   id: string
@@ -58,6 +59,7 @@ export default function ProductsManager() {
   const [catalogoPreviewLoading, setCatalogoPreviewLoading] = useState(false)
   const [importandoCatalogo, setImportandoCatalogo] = useState(false)
   const [mensaje, setMensaje] = useState<{ tipo: 'error' | 'success'; texto: string } | null>(null)
+  const [showFileImport, setShowFileImport] = useState(false)
 
   useEffect(() => {
     loadProductos()
@@ -248,6 +250,34 @@ export default function ProductsManager() {
            (p.codigo_barras && p.codigo_barras.toLowerCase().includes(term))
   })
 
+  const categoriasDisponibles = Array.from(
+    new Set([
+      'General',
+      'Bebidas',
+      'Almacén',
+      'Snacks',
+      'Golosinas',
+      'Lácteos',
+      'Panificados',
+      'Congelados',
+      'Limpieza',
+      'Higiene',
+      'Otros',
+      ...productos.map(p => p.categoria).filter(Boolean),
+      productForm.categoria,
+    ])
+  ).filter(Boolean).sort((a, b) => a.localeCompare(b, 'es'))
+
+  const unidadesDisponibles = [
+    { value: 'unidad', label: 'Unidad' },
+    { value: 'kg', label: 'Kilogramo (kg)' },
+    { value: 'g', label: 'Gramo (g)' },
+    { value: 'lt', label: 'Litro (lt)' },
+    { value: 'ml', label: 'Mililitro (ml)' },
+    { value: 'pack', label: 'Pack' },
+    { value: 'caja', label: 'Caja' },
+  ]
+
   return (
     <div className="mb-6">
       {mensaje && (
@@ -262,10 +292,27 @@ export default function ProductsManager() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xl font-semibold text-slate-900">Catálogo de Productos</h2>
-        <button onClick={openNewProduct} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700 transition">+ Nuevo producto</button>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900">Catálogo de Productos</h2>
+          <p className="mt-0.5 text-xs text-slate-500">Carga manual, edición rápida o importación masiva desde Excel/CSV.</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => setShowFileImport(true)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">Importar Excel / CSV</button>
+          <button onClick={openNewProduct} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-700 transition">+ Nuevo producto</button>
+        </div>
       </div>
+
+      {showFileImport && (
+        <ProductImportModal
+          onClose={() => setShowFileImport(false)}
+          onImported={async (mensajeImportacion) => {
+            setShowFileImport(false)
+            setMensaje({ tipo: 'success', texto: mensajeImportacion })
+            await loadProductos()
+          }}
+        />
+      )}
 
       {/* Banner de importación de catálogo base */}
       {!catalogoPreviewLoading && catalogoPreview && !catalogoPreview.yaConProductos && (
@@ -311,38 +358,166 @@ export default function ProductsManager() {
 
       {/* Formulario inline */}
       {showProductForm && (
-        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <h3 className="font-semibold text-slate-800 mb-3">{editingProduct ? 'Editar producto' : 'Nuevo producto'}</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input className="rounded border border-slate-300 p-2 text-sm" placeholder="Nombre *" value={productForm.nombre} onChange={e => setProductForm(f => ({ ...f, nombre: e.target.value }))} />
-            <input className="rounded border border-slate-300 p-2 text-sm" placeholder="Marca" value={productForm.marca} onChange={e => setProductForm(f => ({ ...f, marca: e.target.value }))} />
-            <input className="rounded border border-slate-300 p-2 text-sm" placeholder="Categoría" value={productForm.categoria} onChange={e => setProductForm(f => ({ ...f, categoria: e.target.value }))} />
-            <input
-              className="rounded border border-slate-300 p-2 text-sm"
-              placeholder="Unidad (unidad, kg, lt...)"
-              value={productForm.unidad_medida}
-              onChange={e => {
-                const u = e.target.value
-                const isLiq = ['lt','litros','litro','ml','cc'].some(x => u.toLowerCase().includes(x))
-                setPrecioCalcRef(isLiq ? '500ml' : '250g')
-                setPrecioCalcInput('')
-                setProductForm(f => ({ ...f, unidad_medida: u }))
-              }}
-            />
-            <input
-              className="rounded border border-slate-300 p-2 text-sm"
-              placeholder={`Precio ${productForm.permite_fraccion ? `por ${productForm.unidad_medida || 'kg'}` : 'venta'} *`}
-              type="number" min="0" step="0.01"
-              value={productForm.precio_venta}
-              onChange={e => { setProductForm(f => ({ ...f, precio_venta: e.target.value })); setPrecioCalcInput('') }}
-            />
-            <input className="rounded border border-slate-300 p-2 text-sm" placeholder="Precio costo" type="number" min="0" step="0.01" value={productForm.precio_costo} onChange={e => setProductForm(f => ({ ...f, precio_costo: e.target.value }))} />
-            <input className="rounded border border-slate-300 p-2 text-sm" placeholder="Stock inicial" type="number" min="0" step="0.001" value={productForm.stock_actual} onChange={e => setProductForm(f => ({ ...f, stock_actual: e.target.value }))} />
-            <input className="rounded border border-slate-300 p-2 text-sm" placeholder="Stock mínimo" type="number" min="0" step="0.001" value={productForm.stock_minimo} onChange={e => setProductForm(f => ({ ...f, stock_minimo: e.target.value }))} />
-            <input className="rounded border border-slate-300 p-2 text-sm" placeholder="Código de barras" value={productForm.codigo_barras} onChange={e => setProductForm(f => ({ ...f, codigo_barras: e.target.value }))} />
-            <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 sm:p-5">
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-slate-900">{editingProduct ? 'Editar producto' : 'Nuevo producto'}</h3>
+              <p className="mt-0.5 text-xs text-slate-500">Completá los datos comerciales y de inventario. Los campos con * son obligatorios.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowProductForm(false)}
+              className="rounded-md border border-slate-300 px-2 py-1 text-xs font-semibold text-slate-500 transition hover:bg-white hover:text-slate-800"
+            >
+              Cerrar
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Nombre del producto *</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                placeholder="Ej: 7UP 500ml"
+                value={productForm.nombre}
+                onChange={e => setProductForm(f => ({ ...f, nombre: e.target.value }))}
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Marca</span>
+              <input
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                placeholder="Ej: 7UP"
+                value={productForm.marca}
+                onChange={e => setProductForm(f => ({ ...f, marca: e.target.value }))}
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Categoría</span>
+              <select
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                value={productForm.categoria}
+                onChange={e => setProductForm(f => ({ ...f, categoria: e.target.value }))}
+              >
+                {categoriasDisponibles.map(categoria => (
+                  <option key={categoria} value={categoria}>{categoria}</option>
+                ))}
+              </select>
+              <span className="mt-1 block text-[11px] text-slate-500">Usamos las categorías que ya existen en tu catálogo.</span>
+            </label>
+
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Unidad de medida</span>
+              <select
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                value={productForm.unidad_medida}
+                onChange={e => {
+                  const u = e.target.value
+                  const isLiq = ['lt','litros','litro','ml','cc'].some(x => u.toLowerCase().includes(x))
+                  setPrecioCalcRef(isLiq ? '500ml' : '250g')
+                  setPrecioCalcInput('')
+                  setProductForm(f => ({ ...f, unidad_medida: u }))
+                }}
+              >
+                {unidadesDisponibles.map(unidad => (
+                  <option key={unidad.value} value={unidad.value}>{unidad.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="my-5 border-t border-emerald-200/70" />
+
+          <div>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">Precios</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold text-slate-700">
+                  {productForm.permite_fraccion ? `Precio por ${productForm.unidad_medida || 'unidad'} *` : 'Precio de venta *'}
+                </span>
+                <div className="relative">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-slate-400">$</span>
+                  <input
+                    className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-7 pr-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                    placeholder="0,00"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={productForm.precio_venta}
+                    onChange={e => { setProductForm(f => ({ ...f, precio_venta: e.target.value })); setPrecioCalcInput('') }}
+                  />
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold text-slate-700">Precio de costo</span>
+                <div className="relative">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-slate-400">$</span>
+                  <input
+                    className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-7 pr-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                    placeholder="0,00"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={productForm.precio_costo}
+                    onChange={e => setProductForm(f => ({ ...f, precio_costo: e.target.value }))}
+                  />
+                </div>
+                <span className="mt-1 block text-[11px] text-slate-500">Opcional. Sirve para calcular margen y rentabilidad.</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="my-5 border-t border-emerald-200/70" />
+
+          <div>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">Inventario</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold text-slate-700">Stock actual</span>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                  placeholder="Ej: 20"
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  value={productForm.stock_actual}
+                  onChange={e => setProductForm(f => ({ ...f, stock_actual: e.target.value }))}
+                />
+                <span className="mt-1 block text-[11px] text-slate-500">Cantidad disponible para vender ahora.</span>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-semibold text-slate-700">Stock mínimo</span>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                  placeholder="Ej: 5"
+                  type="number"
+                  min="0"
+                  step="0.001"
+                  value={productForm.stock_minimo}
+                  onChange={e => setProductForm(f => ({ ...f, stock_minimo: e.target.value }))}
+                />
+                <span className="mt-1 block text-[11px] text-slate-500">Cuando llegue a este nivel, SIC puede marcarlo como bajo.</span>
+              </label>
+
+              <label className="block sm:col-span-2">
+                <span className="mb-1.5 block text-xs font-semibold text-slate-700">Código de barras</span>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+                  placeholder="Ej: 779000000001"
+                  value={productForm.codigo_barras}
+                  onChange={e => setProductForm(f => ({ ...f, codigo_barras: e.target.value }))}
+                />
+              </label>
+            </div>
+
+            <label className="mt-4 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm text-slate-700 cursor-pointer transition hover:border-emerald-400/60 hover:bg-emerald-50/40 dark:border-slate-700 dark:bg-slate-950/35 dark:text-slate-200 dark:hover:border-cyan-500/50 dark:hover:bg-cyan-950/15">
               <input
                 type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-emerald-500"
                 checked={productForm.permite_fraccion}
                 onChange={e => {
                   const checked = e.target.checked
@@ -352,9 +527,13 @@ export default function ProductsManager() {
                   setProductForm(f => ({ ...f, permite_fraccion: checked }))
                 }}
               />
-              Permite fracción (kg, lt...)
+              <span>
+                <b className="font-semibold">Permitir venta fraccionada</b>
+                <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">Para productos vendidos por peso o volumen, por ejemplo kg o litros.</span>
+              </span>
             </label>
           </div>
+
           {/* Calculadora de precio por fracción — solo cuando permite_fraccion está activo */}
           {productForm.permite_fraccion && (() => {
             const isLiq = ['lt','litros','litro','ml','cc'].some(x => productForm.unidad_medida.toLowerCase().includes(x))
@@ -364,7 +543,7 @@ export default function ProductsManager() {
               : [{ key: '100g', label: '100 g', mult: 10 }, { key: '250g', label: '250 g', mult: 4 }, { key: '500g', label: '500 g', mult: 2 }, { key: '1kg', label: '1 kg', mult: 1 }]
             const baseUnit = isLiq ? 'lt' : (productForm.unidad_medida || 'kg')
             return (
-              <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3 space-y-2">
+              <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-3 space-y-2">
                 <p className="text-xs font-semibold text-blue-800">Calculadora de precio por fracción</p>
                 <div className="flex flex-wrap gap-2 items-center">
                   <span className="text-xs text-blue-700">Si cobrás</span>
@@ -405,12 +584,22 @@ export default function ProductsManager() {
               </div>
             )
           })()}
-          <input className="mt-2 w-full rounded border border-slate-300 p-2 text-sm" placeholder="Observaciones" value={productForm.observaciones} onChange={e => setProductForm(f => ({ ...f, observaciones: e.target.value }))} />
-          <div className="mt-3 flex gap-2">
-            <button onClick={saveProduct} disabled={savingProduct} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
-              {savingProduct ? 'Guardando...' : 'Guardar'}
+
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-xs font-semibold text-slate-700">Observaciones</span>
+            <textarea
+              className="min-h-20 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15"
+              placeholder="Notas internas sobre el producto (opcional)"
+              value={productForm.observaciones}
+              onChange={e => setProductForm(f => ({ ...f, observaciones: e.target.value }))}
+            />
+          </label>
+
+          <div className="mt-5 flex justify-end gap-2 border-t border-emerald-200/70 pt-4">
+            <button onClick={() => setShowProductForm(false)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Cancelar</button>
+            <button onClick={saveProduct} disabled={savingProduct} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">
+              {savingProduct ? 'Guardando...' : editingProduct ? 'Guardar cambios' : 'Crear producto'}
             </button>
-            <button onClick={() => setShowProductForm(false)} className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-300">Cancelar</button>
           </div>
         </div>
       )}

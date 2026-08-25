@@ -15,13 +15,21 @@ import ShiftOpener from '@/components/employee/ShiftOpener'
 import PointOfSale from '@/components/employee/PointOfSale'
 import ShiftCloser from '@/components/employee/ShiftCloser'
 import AppShell from '@/components/AppShell'
+import AppLoadingScreen from '@/components/AppLoadingScreen'
 
 export default function EmployeePage() {
   const router = useRouter()
   const { userRole, loading: roleLoading } = useUserRole()
 
   const [loading, setLoading] = useState(true)
+  const [minimumLoadingDone, setMinimumLoadingDone] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+
+  // Evita flashes entre rutas y permite que la pantalla de marca se perciba.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMinimumLoadingDone(true), 2000)
+    return () => window.clearTimeout(timer)
+  }, [])
   const [turnoActivo, setTurnoActivo] = useState<Turno | null>(null)
   const [currentView, setCurrentView] = useState<'apertura' | 'pos' | 'cierre'>('apertura')
 
@@ -171,7 +179,7 @@ export default function EmployeePage() {
     }
   }
 
-  if (loading || roleLoading) return <div className="min-h-screen bg-slate-100 p-4 text-slate-600">Cargando...</div>
+  if (loading || roleLoading || !minimumLoadingDone) return <AppLoadingScreen title="Preparando la caja" subtitle="Verificando el turno y sincronizando el catálogo…" />
 
   return (
     <AppShell
