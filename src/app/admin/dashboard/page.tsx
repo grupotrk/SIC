@@ -68,6 +68,11 @@ export default function AdminDashboardPage() {
   const [emailVendedor, setEmailVendedor] = useState('')
   const [guardandoVendedor, setGuardandoVendedor] = useState(false)
 
+  // Alta manual de comercios / tenants
+  const [showNewCommerce, setShowNewCommerce] = useState(false)
+  const [newCommerce, setNewCommerce] = useState({ nombre_comercio: '', rubro: 'Kiosco', whatsapp: '', email: '', owner_nombre: '', owner_username: '', owner_password: '', trial_days: 7 })
+  const [creatingCommerce, setCreatingCommerce] = useState(false)
+
   // Notificaciones
   const [notifLogs, setNotifLogs] = useState<NotifLog[]>([])
   const [loadingNotifs, setLoadingNotifs] = useState(false)
@@ -228,6 +233,44 @@ export default function AdminDashboardPage() {
         : 'La activación del OWNER fue reenviada correctamente.')
     } catch (e) {
       setStatusMessage(e instanceof Error ? e.message : 'No se pudo reenviar la activación OWNER.')
+    }
+  }
+
+  const createCommerce = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (creatingCommerce) return
+
+    try {
+      setCreatingCommerce(true)
+      setStatusMessage('Creando comercio y cuenta OWNER...')
+      const res = await fetch('/api/admin-create-commerce', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCommerce),
+      })
+      const payload = await res.json().catch(() => null)
+      if (!res.ok || !payload?.ok) {
+        const code = payload?.error || 'unexpected'
+        const messages: Record<string, string> = {
+          email_exists: 'Ese email ya está registrado.',
+          username_exists: 'Ese usuario OWNER ya está en uso.',
+          invalid_password: 'La contraseña debe tener al menos 8 caracteres y combinar letras y números.',
+          rubro_not_found: 'No se encontró ese rubro en Supabase.',
+          plan_not_found: 'No hay un plan configurado.',
+          tenant_provision_failed: 'No se pudo crear el tenant.',
+        }
+        throw new Error(messages[code] || `No se pudo crear el comercio (${code}).`)
+      }
+
+      setShowNewCommerce(false)
+      setNewCommerce({ nombre_comercio: '', rubro: 'Kiosco', whatsapp: '', email: '', owner_nombre: '', owner_username: '', owner_password: '', trial_days: 7 })
+      await loadClients()
+      setStatusMessage(`Comercio creado. Tenant: ${payload.tenant_id}. OWNER: ${payload.owner_username}`)
+    } catch (e) {
+      setStatusMessage(e instanceof Error ? e.message : 'No se pudo crear el comercio.')
+    } finally {
+      setCreatingCommerce(false)
     }
   }
 
@@ -501,6 +544,13 @@ export default function AdminDashboardPage() {
                 />
 
                 <button
+                  onClick={() => setShowNewCommerce(true)}
+                  className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+                >
+                  + Nuevo comercio
+                </button>
+
+                <button
                   onClick={() => exportCsv(filteredClientes)}
                   className="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm hover:bg-white/20"
                 >
@@ -606,6 +656,56 @@ export default function AdminDashboardPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+
+          {showNewCommerce && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+              <form onSubmit={createCommerce} className="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+                <div className="mb-6 flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400">Alta administrada</div>
+                    <h2 className="mt-1 text-2xl font-bold">Nuevo comercio</h2>
+                    <p className="mt-1 text-sm text-slate-400">Crea el tenant y su cuenta OWNER en una sola operación.</p>
+                  </div>
+                  <button type="button" onClick={() => setShowNewCommerce(false)} className="rounded-lg border border-slate-700 px-3 py-2 text-slate-300 hover:bg-slate-800">✕</button>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="text-sm text-slate-300">Nombre del comercio
+                    <input required value={newCommerce.nombre_comercio} onChange={(e) => setNewCommerce(v => ({...v, nombre_comercio: e.target.value}))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 outline-none focus:border-emerald-500" />
+                  </label>
+                  <label className="text-sm text-slate-300">Rubro
+                    <select value={newCommerce.rubro} onChange={(e) => setNewCommerce(v => ({...v, rubro: e.target.value}))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5">
+                      {['Kiosco','Rotisería','Ferretería','Carnicería','Tienda de Mascotas','Librería'].map(r => <option key={r}>{r}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-sm text-slate-300">Email OWNER
+                    <input required type="email" value={newCommerce.email} onChange={(e) => setNewCommerce(v => ({...v, email: e.target.value}))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 outline-none focus:border-emerald-500" />
+                  </label>
+                  <label className="text-sm text-slate-300">WhatsApp
+                    <input required value={newCommerce.whatsapp} onChange={(e) => setNewCommerce(v => ({...v, whatsapp: e.target.value}))} placeholder="1122334455" className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 outline-none focus:border-emerald-500" />
+                  </label>
+                  <label className="text-sm text-slate-300">Nombre del dueño
+                    <input required value={newCommerce.owner_nombre} onChange={(e) => setNewCommerce(v => ({...v, owner_nombre: e.target.value}))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 outline-none focus:border-emerald-500" />
+                  </label>
+                  <label className="text-sm text-slate-300">Usuario OWNER
+                    <input required pattern="[A-Za-z0-9]{3,40}" value={newCommerce.owner_username} onChange={(e) => setNewCommerce(v => ({...v, owner_username: e.target.value.replace(/[^a-zA-Z0-9]/g,'')}))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 outline-none focus:border-emerald-500" />
+                  </label>
+                  <label className="text-sm text-slate-300">Contraseña temporal
+                    <input required type="password" minLength={8} value={newCommerce.owner_password} onChange={(e) => setNewCommerce(v => ({...v, owner_password: e.target.value}))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 outline-none focus:border-emerald-500" />
+                  </label>
+                  <label className="text-sm text-slate-300">Días de prueba
+                    <input required type="number" min={0} max={90} value={newCommerce.trial_days} onChange={(e) => setNewCommerce(v => ({...v, trial_days: Number(e.target.value)}))} className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 outline-none focus:border-emerald-500" />
+                  </label>
+                </div>
+
+                <div className="mt-6 rounded-xl border border-amber-500/25 bg-amber-500/10 p-3 text-xs text-amber-100">La contraseña es temporal: entregala al cliente por un canal seguro y pedile que la cambie.</div>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button type="button" onClick={() => setShowNewCommerce(false)} className="rounded-lg border border-slate-700 px-4 py-2.5 text-sm hover:bg-slate-800">Cancelar</button>
+                  <button disabled={creatingCommerce} className="rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-bold text-slate-950 hover:bg-emerald-400 disabled:opacity-50">{creatingCommerce ? 'Creando...' : 'Crear comercio'}</button>
+                </div>
+              </form>
             </div>
           )}
 
@@ -1044,4 +1144,4 @@ function AlertGroup({
       </div>
     </div>
   )
-}
+}

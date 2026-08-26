@@ -431,3 +431,101 @@ html[data-theme='dark'] .login-secondary-actions a { color:#7e90a6; }
 html[data-theme='dark'] .login-trust { border-color:#223043; color:#61748b; }
 html[data-theme='dark'] .login-theme .theme-toggle { color:#a8b6c6; background:#111b28; border-color:#263447; }
 html[data-theme='dark'] .login-error { border-color:#66313a; background:#2a171c; color:#ff9ba6; }
+
+/* =========================================================
+   SIDEA INGENIERÍA — corporate palette 2026
+   Navy + graphite + blue. Semantic colors are reserved for status.
+   ========================================================= */
+:root {
+  --sidea-navy-950:#07111f;
+  --sidea-navy-900:#0d1b2a;
+  --sidea-navy-800:#1b263b;
+  --sidea-blue-600:#2563eb;
+  --sidea-blue-500:#3b82f6;
+  --sidea-blue-400:#60a5fa;
+  --sidea-gray-700:#374151;
+  --sidea-gray-500:#6b7280;
+  --sidea-gray-300:#d1d5db;
+  --sidea-gray-100:#f3f4f6;
+
+  --app-bg:#f5f7fa;
+  --app-surface:#ffffff;
+  --app-surface-2:#f8fafc;
+  --app-surface-3:#eef2f6;
+  --app-border:#dce2e8;
+  --app-border-strong:#cbd3dc;
+  --app-text:#142033;
+  --app-muted:#667085;
+  --app-faint:#98a2b3;
+  --app-sidebar:#0d1b2a;
+  --app-sidebar-2:#111f31;
+  --app-accent:#3b82f6;
+  --app-accent-strong:#2563eb;
+  --app-green:#16865f;
+  --app-success:#16865f;
+  --app-warning:#a66a13;
+  --app-danger:#b83a48;
+  --app-shadow:0 8px 28px rgba(13,27,42,.055);
+  --app-shadow-soft:0 2px 10px rgba(13,27,42,.035);
+}
+html[data-theme='dark'] {
+  --app-bg:#07111f;
+  --app-surface:#0d1b2a;
+  --app-surface-2:#111c2b;
+  --app-surface-3:#172436;
+  --app-border:#25354a;
+  --app-border-strong:#34465d;
+  --app-text:#f2f4f7;
+  --app-muted:#98a6b8;
+  --app-faint:#66758a;
+  --app-sidebar:#050c15;
+  --app-sidebar-2:#0a1421;
+  --app-accent:#60a5fa;
+  --app-accent-strong:#3b82f6;
+  --app-green:#4db88b;
+  --app-success:#4db88b;
+  --app-warning:#d6a85d;
+  --app-danger:#e47b86;
+}
+
+/* Brand shell */
+.app-sidebar{background:linear-gradient(180deg,var(--app-sidebar),var(--app-sidebar-2));}
+.app-brand-logo{width:92px;max-height:48px;object-fit:contain;border-radius:6px;background:#fff;padding:3px;}
+.app-nav a.active{background:rgba(59,130,246,.12);border-color:rgba(96,165,250,.18);box-shadow:inset 2px 0 0 var(--app-accent);}
+.app-nav a:hover{background:rgba(255,255,255,.055);}
+.app-button-primary{background:var(--app-accent-strong);border-color:var(--app-accent-strong);box-shadow:none;}
+.app-button-primary:hover{background:#1d4ed8;filter:none;}
+.metric-primary{background:color-mix(in srgb,var(--app-accent) 7%,var(--app-surface-2));border-color:color-mix(in srgb,var(--app-accent) 24%,var(--app-border));}
+.metric-primary strong{color:var(--app-accent-strong);}
+
+/* Inputs and focus use one brand accent instead of cyan/green. */
+.sic-app-shell input:focus,.sic-app-shell select:focus,.sic-app-shell textarea:focus{border-color:var(--app-accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--app-accent) 13%,transparent)!important;outline:none!important;}
+
+/* Login */
+.login-shell{background:var(--sidea-navy-950);}
+.login-showcase{background:linear-gradient(145deg,#07111f 0%,#0d1b2a 54%,#1b263b 100%);}
+.login-product-mark{border-color:rgba(96,165,250,.25);background:rgba(59,130,246,.07);color:#93c5fd;}
+.login-glow-one{background:radial-gradient(circle,rgba(59,130,246,.14),transparent 68%);}
+.login-glow-two{background:radial-gradient(circle,rgba(107,114,128,.07),transparent 68%);}
+.login-kicker{color:#2563eb;}
+.login-field input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.10);}
+.login-submit{background:#0d1b2a;}
+.login-submit:hover{background:#1b263b;}
+.login-secondary-actions a:hover{color:#2563eb;}
+html[data-theme='dark'] .login-field input:focus{border-color:#60a5fa;}
+html[data-theme='dark'] .login-submit{background:#2563eb;}
+html[data-theme='dark'] .login-submit:hover{background:#1d4ed8;}
+
+/* Reduce visual noise from legacy cyan/emerald utility accents.
+   Success/warning/danger remain semantic, not decorative. */
+.sic-app-shell .text-cyan-700,.sic-app-shell .text-sky-700,.sic-app-shell .text-sky-900{color:var(--app-accent-strong)!important;}
+.sic-app-shell .bg-cyan-50,.sic-app-shell .bg-sky-50{background:color-mix(in srgb,var(--app-accent) 7%,var(--app-surface))!important;}
+.sic-app-shell .border-cyan-200,.sic-app-shell .border-sky-200{border-color:color-mix(in srgb,var(--app-accent) 24%,var(--app-border))!important;}
+
+/* SIDEA BRAND — contraste del logo */
+html.dark .app-brand-logo,[data-theme="dark"] .app-brand-logo{
+ filter:drop-shadow(0 0 1px rgba(255,255,255,.28)) drop-shadow(0 0 9px rgba(96,165,250,.26)) drop-shadow(0 0 22px rgba(96,165,250,.12));
+}
+html:not(.dark) .app-brand-logo,[data-theme="light"] .app-brand-logo{
+ filter:drop-shadow(0 5px 12px rgba(7,17,31,.10));
+}

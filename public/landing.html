@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIC — Sistema Interno de Control</title>
-    <meta name="description" content="SIC es la herramienta de gestión interna para comercios. Controlá turnos, ventas, empleados y reportes en un solo lugar. Funciona incluso sin internet.">
+    <meta name="description" content="SIC centraliza ventas, caja, stock, empleados y cierres diarios para que gestiones tu comercio con más control y menos tareas manuales.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --sic-dark:  #0b1730;
-            --sic-blue:  #15345f;
-            --sic-green: #98ce4f;
-            --sic-cyan:  #33d3e7;
-            --sic-mid:   #1e3a5f;
+            --sic-dark:  #0b1420;
+            --sic-blue:  #102a43;
+            --sic-green: #3b82f6;
+            --sic-cyan:  #60a5fa;
+            --sic-mid:   #1b263b;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,7 +33,7 @@
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             display: flex; align-items: center; justify-content: space-between;
             padding: 1rem 2rem;
-            background: rgba(11, 23, 48, 0.85);
+            background: rgba(11, 20, 32, 0.88);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.06);
         }
@@ -58,12 +58,12 @@
             text-align: center;
             padding: 7rem 2rem 4rem;
             background:
-                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(21,52,95,0.7) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 40% at 80% 60%, rgba(51,211,231,0.08) 0%, transparent 60%);
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(27,38,59,0.72) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 80% 60%, rgba(59,130,246,0.08) 0%, transparent 60%);
         }
         .hero-badge {
             display: inline-flex; align-items: center; gap: 0.5rem;
-            background: rgba(152,206,79,0.12); border: 1px solid rgba(152,206,79,0.3);
+            background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.3);
             color: var(--sic-green); font-size: 0.8rem; font-weight: 600;
             padding: 0.4rem 1rem; border-radius: 999px; margin-bottom: 2rem;
             letter-spacing: 0.04em; text-transform: uppercase;
@@ -85,9 +85,9 @@
             color: var(--sic-dark); font-weight: 700; font-size: 1rem;
             padding: 0.85rem 2rem; border-radius: 10px;
             text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 24px rgba(152,206,79,0.25);
+            box-shadow: 0 4px 24px rgba(59,130,246,0.18);
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(152,206,79,0.35); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(59,130,246,0.24); }
         .btn-ghost {
             background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
             color: white; font-weight: 600; font-size: 1rem;
@@ -134,12 +134,12 @@
             border-radius: 16px; padding: 2rem;
             transition: border-color 0.3s, transform 0.3s;
         }
-        .feature-card:hover { border-color: rgba(152,206,79,0.3); transform: translateY(-4px); }
+        .feature-card:hover { border-color: rgba(59,130,246,0.3); transform: translateY(-4px); }
         .feature-icon {
             width: 48px; height: 48px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.3rem; margin-bottom: 1.2rem;
-            background: linear-gradient(135deg, rgba(152,206,79,0.2), rgba(51,211,231,0.1));
+            background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(96,165,250,0.1));
             color: var(--sic-green);
         }
         .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
@@ -155,7 +155,7 @@
         .step-num {
             width: 52px; height: 52px; border-radius: 50%;
             background: linear-gradient(135deg, var(--sic-blue), var(--sic-mid));
-            border: 2px solid rgba(152,206,79,0.4);
+            border: 2px solid rgba(59,130,246,0.4);
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem; font-weight: 900; color: var(--sic-green);
             margin: 0 auto 1.2rem;
@@ -166,7 +166,7 @@
         /* ── OFFLINE BANNER ── */
         .offline-banner {
             background: linear-gradient(135deg, var(--sic-blue), var(--sic-mid));
-            border: 1px solid rgba(51,211,231,0.2);
+            border: 1px solid rgba(96,165,250,0.2);
             border-radius: 20px; padding: 3rem 2.5rem;
             display: grid; grid-template-columns: 1fr auto;
             align-items: center; gap: 2rem; margin-top: 4rem;
@@ -183,10 +183,10 @@
         .pricing-card {
             max-width: 440px; margin: 3.5rem auto 0;
             background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(152,206,79,0.25);
+            border: 1px solid rgba(59,130,246,0.25);
             border-radius: 20px; padding: 2.5rem;
             text-align: center;
-            box-shadow: 0 0 60px rgba(152,206,79,0.06);
+            box-shadow: 0 0 60px rgba(59,130,246,0.06);
         }
         .pricing-label {
             font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
@@ -196,7 +196,7 @@
         .price { font-size: 3.2rem; font-weight: 900; line-height: 1; }
         .price sup { font-size: 1.5rem; vertical-align: top; margin-top: 0.5rem; }
         .price sub { font-size: 1rem; font-weight: 500; color: rgba(255,255,255,0.5); }
-        .pricing-features { list-style: none; text-align: left; margin: 2rem 0; space-y: 0.75rem; }
+        .pricing-features { list-style: none; text-align: left; margin: 2rem 0; display: flex; flex-direction: column; gap: 0.75rem; }
         .pricing-features li {
             display: flex; align-items: center; gap: 0.75rem;
             font-size: 0.95rem; color: rgba(255,255,255,0.8);
@@ -239,15 +239,104 @@
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
-    </style>
+    
+        /* =====================================================
+           SIDEA — Brand, themes and cinematic intro
+           ===================================================== */
+        :root {
+            --sidea-bg: #f6f8fb;
+            --sidea-surface: #ffffff;
+            --sidea-surface-2: #eef2f7;
+            --sidea-text: #0d1b2a;
+            --sidea-muted: #64748b;
+            --sidea-border: #dbe3ed;
+            --sidea-primary: #2563eb;
+            --sidea-primary-hover: #1d4ed8;
+            --sidea-header: rgba(246,248,251,.86);
+            --sidea-shadow: 0 18px 50px rgba(13,27,42,.08);
+        }
+        html[data-theme="dark"] {
+            --sidea-bg: #07111f;
+            --sidea-surface: #0d1b2a;
+            --sidea-surface-2: #111f31;
+            --sidea-text: #f8fafc;
+            --sidea-muted: #9fb0c5;
+            --sidea-border: #22344a;
+            --sidea-primary: #3b82f6;
+            --sidea-primary-hover: #60a5fa;
+            --sidea-header: rgba(7,17,31,.86);
+            --sidea-shadow: 0 20px 60px rgba(0,0,0,.28);
+        }
+        html, body { background: var(--sidea-bg) !important; color: var(--sidea-text) !important; }
+        nav { background: var(--sidea-header) !important; border-color: var(--sidea-border) !important; backdrop-filter: blur(16px); }
+        .brand-logo-img {
+            display:block; width:clamp(132px,11vw,168px); height:auto; object-fit:contain;
+            transition:filter .2s ease;
+        }
+        html[data-theme="dark"] .brand-logo-img {
+            filter:drop-shadow(0 0 1px rgba(255,255,255,.3))
+                   drop-shadow(0 0 9px rgba(96,165,250,.25))
+                   drop-shadow(0 0 20px rgba(96,165,250,.12));
+        }
+        html[data-theme="light"] .brand-logo-img { filter:drop-shadow(0 5px 14px rgba(7,17,31,.10)); }
+
+        .theme-toggle {
+            width:42px;height:42px;border-radius:12px;border:1px solid var(--sidea-border);
+            background:var(--sidea-surface);color:var(--sidea-text);display:inline-grid;place-items:center;
+            cursor:pointer;box-shadow:0 5px 18px rgba(7,17,31,.06);
+        }
+        .theme-toggle svg{width:19px;height:19px}.theme-toggle .moon-icon{display:none}
+        html[data-theme="dark"] .theme-toggle .sun-icon{display:none}
+        html[data-theme="dark"] .theme-toggle .moon-icon{display:block}
+
+        #sideaIntro {
+            position:fixed; inset:0; z-index:99999;
+            display:grid; place-items:center;
+            background:#07111f;
+            opacity:1; visibility:visible;
+            transition:opacity .48s ease, visibility .48s ease;
+        }
+        #sideaIntro.is-leaving { opacity:0; visibility:hidden; pointer-events:none; }
+        #sideaIntro video {
+            display:block;
+            width:min(760px,88vw);
+            max-height:82vh;
+            object-fit:contain;
+            filter:
+              drop-shadow(0 0 2px rgba(255,255,255,.34))
+              drop-shadow(0 0 16px rgba(96,165,250,.34))
+              drop-shadow(0 0 40px rgba(59,130,246,.18));
+        }
+        #sideaIntro .intro-skip {
+            position:absolute; right:clamp(18px,3vw,40px); bottom:clamp(18px,3vw,34px);
+            border:1px solid rgba(255,255,255,.14); background:rgba(13,27,42,.52);
+            color:rgba(255,255,255,.72); padding:.58rem .9rem; border-radius:10px;
+            font:inherit; font-size:.78rem; cursor:pointer; backdrop-filter:blur(10px);
+        }
+        #sideaIntro .intro-skip:hover { color:#fff; border-color:rgba(96,165,250,.5); }
+        @media (prefers-reduced-motion: reduce) { #sideaIntro { display:none !important; } }
+
+</style>
+<script>
+(function(){
+  const saved=localStorage.getItem('sidea-landing-theme');
+  const dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme=saved||(dark?'dark':'light');
+})();
+</script>
 </head>
 <body>
+<div id="sideaIntro" aria-label="SIDEA Ingeniería">
+    <video id="sideaIntroVideo" autoplay muted playsinline preload="auto">
+        <source src="/sidea-logo-reveal.webm" type="video/webm">
+    </video>
+    <button class="intro-skip" id="sideaIntroSkip" type="button">Omitir intro</button>
+</div>
 
 <!-- NAV -->
 <nav>
     <a href="#" class="nav-logo">
-        <i class="fas fa-chart-line" style="color: var(--sic-green); font-size: 1.2rem;"></i>
-        <span>SIC</span>
+        <img src="/sidea-logo.png" alt="SIDEA Ingeniería" class="brand-logo-img">
     </a>
     <a href="/login" class="nav-cta">Ingresar al sistema</a>
 </nav>
@@ -264,8 +353,8 @@
             <span class="accent">sin complicaciones</span>
         </h1>
         <p class="fade-up delay-2">
-            Control de turnos, ventas, empleados y cierres diarios en un solo lugar.
-            Funciona incluso cuando no tenés internet.
+            Ventas, caja, stock, empleados y cierres diarios en un solo sistema.
+            Si la conexión se interrumpe durante una venta, SIC conserva la operación y la sincroniza cuando vuelve internet.
         </p>
         <div class="hero-actions fade-up delay-3">
             <a href="/login" class="btn-primary">
@@ -277,16 +366,16 @@
 
         <div class="hero-stats fade-up delay-3">
             <div class="stat">
-                <div class="stat-number">100%</div>
-                <div class="stat-label">Datos privados</div>
+                <div class="stat-number">Seguro</div>
+                <div class="stat-label">Datos protegidos por comercio</div>
             </div>
             <div class="stat">
-                <div class="stat-number">Sin</div>
-                <div class="stat-label">Instalación requerida</div>
+                <div class="stat-number">Web</div>
+                <div class="stat-label">Sin instalación</div>
             </div>
             <div class="stat">
-                <div class="stat-number">Offline</div>
-                <div class="stat-label">Funciona sin internet</div>
+                <div class="stat-number">Continuidad</div>
+                <div class="stat-label">Ventas ante cortes de conexión</div>
             </div>
         </div>
     </div>
@@ -298,7 +387,7 @@
         <div class="section-tag">Funcionalidades</div>
         <h2 class="section-title">Todo lo que necesitás para operar</h2>
         <p class="section-sub">
-            Diseñado para comercios reales. Sin funciones que no usás, sin costos ocultos.
+            Herramientas concretas para operar, controlar y entender tu comercio desde un solo lugar.
         </p>
 
         <div class="features-grid">
@@ -310,7 +399,7 @@
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-cash-register"></i></div>
                 <h3>Punto de venta</h3>
-                <p>Registrá ventas rápidamente por producto. Efectivo o tarjeta. Los totales se calculan solos.</p>
+                <p>Registrá ventas por producto con efectivo, tarjeta, transferencia, billetera virtual o QR. Stock y totales se actualizan automáticamente.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-users"></i></div>
@@ -320,7 +409,7 @@
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-chart-bar"></i></div>
                 <h3>Dashboard del dueño</h3>
-                <p>Ventas del día, empleados activos, efectivo y tarjeta desglosados. Todo actualizado en tiempo real.</p>
+                <p>Ventas del día, medios de pago, actividad del equipo y estado operativo del comercio en una sola vista.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-file-pdf"></i></div>
@@ -337,8 +426,8 @@
         <!-- Offline Banner -->
         <div class="offline-banner">
             <div>
-                <h3>Funciona sin internet</h3>
-                <p>Si se cae la conexión durante el turno, el SIC sigue registrando ventas localmente. Cuando vuelve internet, todo se sincroniza automáticamente sin perder ningún dato.</p>
+                <h3>¿Se cortó internet? Seguís vendiendo.</h3>
+                <p>Si la conexión se interrumpe durante una venta, SIC conserva la operación localmente y la sincroniza automáticamente cuando vuelve internet. La continuidad se aplica al flujo de ventas durante cortes de conexión.</p>
             </div>
             <div class="offline-icon"><i class="fas fa-wifi-slash"></i></div>
         </div>
@@ -350,7 +439,7 @@
     <div class="container">
         <div class="section-tag">Cómo funciona</div>
         <h2 class="section-title">Empezar es simple</h2>
-        <p class="section-sub">No necesitás instalación ni configuración compleja. Entrás y empezás a operar.</p>
+        <p class="section-sub">Sin instalaciones locales ni configuraciones complejas. Recibís tu acceso y empezás a operar.</p>
 
         <div class="steps">
             <div class="step">
@@ -366,7 +455,7 @@
             <div class="step">
                 <div class="step-num">3</div>
                 <h3>Registrás ventas</h3>
-                <p>Cada venta queda registrada con método de pago, productos y monto. Sin papel, sin errores.</p>
+                <p>Cada venta queda registrada con productos, importe y medio de pago. El stock se actualiza con cada operación.</p>
             </div>
             <div class="step">
                 <div class="step-num">4</div>
@@ -447,5 +536,50 @@
     </p>
 </footer>
 
+<script>
+(function(){
+  const intro=document.getElementById('sideaIntro');
+  const video=document.getElementById('sideaIntroVideo');
+  const skip=document.getElementById('sideaIntroSkip');
+  let closing=false;
+
+  function closeIntro(hold=0){
+    if(!intro || closing) return;
+    closing=true;
+    window.setTimeout(()=>{
+      intro.classList.add('is-leaving');
+      window.setTimeout(()=>intro.remove(),520);
+    },hold);
+  }
+
+  if(intro){
+    if(video){
+      video.currentTime=0;
+      video.addEventListener('ended',()=>closeIntro(300),{once:true});
+      video.addEventListener('error',()=>closeIntro(0),{once:true});
+
+      const tryPlay=()=>{
+        const p=video.play();
+        if(p && p.catch) p.catch(()=>closeIntro(0));
+      };
+
+      if(video.readyState >= 2) tryPlay();
+      else video.addEventListener('canplay',tryPlay,{once:true});
+    }
+
+    if(skip) skip.addEventListener('click',()=>closeIntro(0));
+
+    // Emergency fallback only: never blocks access to the landing.
+    window.setTimeout(()=>closeIntro(0),12000);
+  }
+
+  const theme=document.getElementById('themeToggle');
+  if(theme) theme.addEventListener('click',()=>{
+    const next=document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=next;
+    localStorage.setItem('sidea-landing-theme',next);
+  });
+})();
+</script>
 </body>
 </html>

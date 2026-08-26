@@ -31,8 +31,8 @@ export default function AppLoadingScreen({
       >
         <div className="sic-loader-brand">
           <img
-            src="/trikode-logo.png"
-            alt="Trikode Ingeniería"
+            src="/sidea-logo.png"
+            alt="SIDEA Ingeniería"
             className="sic-loader-logo"
             style={{ width: 118, height: 'auto', display: 'block' }}
           />

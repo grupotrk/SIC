@@ -41,7 +41,7 @@ export default function AppShell({ title, subtitle, badge, navItems, onLogout, l
     <div className="sic-app-shell">
       <aside className="app-sidebar">
         <div className="app-brand">
-          <img src="/trikode-logo.png" alt="Trikode Ingeniería" className="app-brand-logo" />
+          <img src="/sidea-logo.png" alt="SIDEA Ingeniería" className="app-brand-logo" />
           <div className="app-brand-copy"><strong>SIC</strong><small>Sistema interno de control</small></div>
         </div>
 

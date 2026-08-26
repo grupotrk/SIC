@@ -128,7 +128,7 @@ export default function LoginPage() {
     <main className="login-shell">
       <section className="login-showcase" aria-hidden="true">
         <div className="login-showcase-inner">
-          <Image src="/trikode-logo.png" alt="" width={190} height={60} className="login-brand-logo" priority />
+          <Image src="/sidea-logo.png" alt="" width={190} height={60} className="login-brand-logo" priority />
           <div className="login-product-mark">SIC</div>
           <h1>Control operativo,<br />sin ruido.</h1>
           <p>Ventas, stock, caja y equipo en una sola herramienta pensada para el trabajo diario.</p>
@@ -145,7 +145,7 @@ export default function LoginPage() {
       <section className="login-access">
         <div className="login-theme"><ThemeToggle /></div>
         <div className="login-card">
-          <div className="login-mobile-brand"><Image src="/trikode-logo.png" alt="Trikode Ingeniería" width={150} height={48} className="h-auto w-[132px]" priority /></div>
+          <div className="login-mobile-brand"><Image src="/sidea-logo.png" alt="SIDEA Ingeniería" width={150} height={48} className="h-auto w-[132px]" priority /></div>
           <div className="login-heading">
             <span className="login-kicker">Acceso seguro</span>
             <h2>Ingresar al SIC</h2>
@@ -181,7 +181,7 @@ export default function LoginPage() {
             <a href="/landing.html">Volver al sitio</a>
           </div>
 
-          <div className="login-trust"><span className="status-dot" />Conexión protegida · Trikode Ingeniería</div>
+          <div className="login-trust"><span className="status-dot" />Conexión protegida · SIDEA Ingeniería</div>
         </div>
       </section>
     </main>
