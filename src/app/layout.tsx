@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { UserRoleProvider } from '@/lib/UserRoleContext'
+import RootProviders from '@/components/RootProviders'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -16,9 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `(function(){try{var t=localStorage.getItem('sic-theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme='dark'}})()`,
           }}
         />
-        <UserRoleProvider>
+        <RootProviders>
           {children}
-        </UserRoleProvider>
+        </RootProviders>
       </body>
     </html>
   )

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function AdminLoginPage() {
   const router = useRouter()
-  const [username, setUsername] = useState('admin')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -51,7 +51,12 @@ export default function AdminLoginPage() {
       })
 
       if (response.ok) {
-        router.replace('/admin/dashboard')
+        const payload = await response.json().catch(() => null)
+        if (payload?.requires_password_change) {
+          router.replace('/admin/change-password')
+        } else {
+          router.replace('/admin/dashboard')
+        }
         return
       }
 
@@ -77,21 +82,22 @@ export default function AdminLoginPage() {
       <div className="min-h-screen flex items-center justify-center px-6">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="text-4xl font-black mb-2 text-[#98ce4f]">TRIKODE ADMIN</div>
+            <div className="text-4xl font-black mb-2 text-[#3B82F6]">SIDEA ADMIN</div>
             <p className="text-slate-300">Panel de Administración</p>
           </div>
 
           <div className="rounded-xl border border-white/20 bg-white/10 backdrop-blur-md p-8">
             <form onSubmit={handleLogin}>
               <div className="mb-6">
-                <label className="block text-sm font-medium mb-2">Usuario</label>
+                <label className="block text-sm font-medium mb-2">Email o usuario de emergencia</label>
                 <div className="relative">
                   <input
                     type="text"
                     required
+                    placeholder="nombre@sidea.com"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-3 text-white outline-none focus:border-[#98ce4f]"
+                    className="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-3 text-white outline-none focus:border-[#3B82F6]"
                   />
                 </div>
               </div>
@@ -105,7 +111,7 @@ export default function AdminLoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="•••••••••"
-                    className="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-3 text-white outline-none focus:border-[#98ce4f]"
+                    className="w-full rounded-lg bg-slate-800 border border-slate-700 px-4 py-3 text-white outline-none focus:border-[#3B82F6]"
                   />
                 </div>
               </div>
@@ -124,9 +130,21 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={loading || blocked}
-                className="w-full rounded-lg bg-[linear-gradient(45deg,#98ce4f,#33d3e7)] px-4 py-3 font-bold text-[#0b1730] disabled:opacity-60"
+                className="w-full rounded-lg bg-[linear-gradient(45deg,#3B82F6,#60A5FA)] px-4 py-3 font-bold text-[#0b1730] disabled:opacity-60"
               >
                 {loading ? 'Verificando...' : 'Ingresar al Panel'}
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const email = username.trim()
+                  if (!email.includes('@')) { setError('Ingresá tu email de administrador para recuperar la contraseña.'); return }
+                  await fetch('/api/admin-forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+                  setError('Si el correo pertenece a un administrador activo, vas a recibir un email para recuperar la contraseña.')
+                }}
+                className="mt-3 w-full text-sm text-slate-300 underline underline-offset-4"
+              >
+                Olvidé mi contraseña
               </button>
             </form>
 
@@ -150,7 +168,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="mt-8 text-center text-sm text-slate-400">
-            <p>&copy; 2026 Trikode Ingeniería - Panel Administrativo</p>
+            <p>&copy; 2026 SIDEA Ingeniería - Panel Administrativo</p>
             <p className="text-xs mt-1">Acceso restringido y monitoreado</p>
           </div>
         </div>

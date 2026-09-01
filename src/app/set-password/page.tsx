@@ -110,7 +110,9 @@ export default function SetPasswordPage() {
 
     setSubmitting(true)
 
-    const { error } = await supabase.auth.updateUser({ password })
+    const { data: currentUserData } = await supabase.auth.getUser()
+    const currentMetadata = currentUserData.user?.user_metadata || {}
+    const { error } = await supabase.auth.updateUser({ password, data: { ...currentMetadata, must_change_password: false } })
     if (error) {
       setErrorMsg('No se pudo guardar la contraseña. Intentá nuevamente.')
       setSubmitting(false)
@@ -118,7 +120,7 @@ export default function SetPasswordPage() {
     }
 
     setPhase('success')
-    setTimeout(() => router.push('/login'), 2500)
+    setTimeout(() => router.push(resolvedRole === 'SUPERADMIN' ? '/admin' : '/login'), 2500)
   }
 
   if (phase === 'loading') {
@@ -168,8 +170,8 @@ export default function SetPasswordPage() {
     >
       <div className="max-w-md w-full rounded-2xl border p-8" style={{ borderColor: 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)' }}>
         <Image
-          src="/trikode-logo.png"
-          alt="Trikode Ingenieria"
+          src="/sidea-logo.png"
+          alt="SIDEA Ingeniería"
           width={160}
           height={44}
           className="h-11 w-auto mb-3 object-contain"
@@ -225,7 +227,7 @@ export default function SetPasswordPage() {
             type="submit"
             disabled={submitting}
             className="w-full rounded px-4 py-2 font-bold disabled:opacity-60"
-            style={{ background: 'linear-gradient(45deg, #98ce4f, #33d3e7)', color: '#0b1730' }}
+            style={{ background: 'linear-gradient(45deg, #3B82F6, #60A5FA)', color: '#0b1730' }}
           >
             {submitting ? 'Guardando...' : 'Activar cuenta'}
           </button>

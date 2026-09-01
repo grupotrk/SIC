@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - Trikode</title>
+    <title>Dashboard Admin - SIDEA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --trikode-blue: #15345f;
-            --trikode-green: #98ce4f;
-            --trikode-cyan: #33d3e7;
-            --trikode-dark: #0b1730;
+            --trikode-blue: #2563eb;
+            --trikode-green: #60a5fa;
+            --trikode-cyan: #3b82f6;
+            --trikode-dark: #07111f;
         }
         
         body {
@@ -95,7 +95,7 @@
         <div class="w-64 glass m-4 rounded-xl p-6 flex flex-col">
             <div class="mb-8">
                 <h1 id="admin-dashboard-fallback" class="text-2xl font-black" style="color: var(--trikode-green);">ADMIN</h1>
-                <p class="text-gray-400 text-sm">Trikode Panel</p>
+                <p class="text-gray-400 text-sm">SIDEA Panel</p>
             </div>
             
             <nav class="flex-1">
@@ -179,7 +179,7 @@
                     </div>
                     <div class="glass p-4 rounded-lg text-center">
                         <div class="text-3xl font-bold text-emerald-300" id="netoMensual">$0</div>
-                        <div class="text-sm text-gray-400">Neto Trikode</div>
+                        <div class="text-sm text-gray-400">Neto SIDEA</div>
                     </div>
                 </div>
                 
@@ -692,7 +692,7 @@
                 const diasClass = dias > 30 ? 'text-red-400' : dias === 30 ? 'text-yellow-400' : 'text-green-400';
                 const vencimiento = new Date(cliente.fecha_vencimiento).toLocaleDateString('es-AR');
                 const clienteId = escapeHtml(String(cliente.id));
-                const wspMsg = encodeURIComponent(`Hola ${cliente.nombre_comercio}, soy Diego de Trikode. Te contacto por tu suscripción.`);
+                const wspMsg = encodeURIComponent(`Hola ${cliente.nombre_comercio}, soy parte del equipo de SIDEA. Te contacto por tu suscripción.`);
                 const ownerActivationLabel = escapeHtml(cliente.owner_activation_label || 'Activación OWNER pendiente');
                 const ownerActivationDetail = cliente.owner_activation_detail
                     ? escapeHtml(cliente.owner_activation_detail)
@@ -769,7 +769,7 @@
                         <span class="glass px-2 py-1 rounded text-xs">${vendedorCodigo}</span>
                     </td>
                     <td class="p-4">
-                        <span class="glass px-2 py-1 rounded text-xs">Trikode Completo</span>
+                        <span class="glass px-2 py-1 rounded text-xs">SIDEA Completo</span>
                     </td>
                     <td class="p-4">
                         <a href="https://wa.me/549${wsp}" target="_blank" rel="noopener noreferrer" class="text-green-400 hover:text-green-300">
@@ -796,7 +796,7 @@
                                 <i class="fab fa-whatsapp"></i>
                             </a>
                             ${email ? `
-                                <a href="mailto:${email}?subject=Trikode%20-%20Tu%20suscripci%C3%B3n"
+                                <a href="mailto:${email}?subject=SIDEA%20-%20Tu%20suscripci%C3%B3n"
                                    class="btn-action" title="Enviar Email">
                                     <i class="fas fa-envelope"></i>
                                 </a>
@@ -953,13 +953,13 @@
         // Exportar datos
         function exportData() {
             const csvContent = [
-                ['Comercio', 'Rubro', 'Vendedor', 'Codigo Vendedor', 'Plan', 'WhatsApp', 'Email', 'Estado', 'Dias', 'Vencimiento', 'Precio Mensual', 'Comision Vendedor', 'Neto Trikode'],
+                ['Comercio', 'Rubro', 'Vendedor', 'Codigo Vendedor', 'Plan', 'WhatsApp', 'Email', 'Estado', 'Dias', 'Vencimiento', 'Precio Mensual', 'Comision Vendedor', 'Neto SIDEA'],
                 ...clientesData.map(c => [
                     c.nombre_comercio,
                     c.rubro,
                     c.vendedor_nombre || '',
                     c.vendedor_codigo || '',
-                    'Trikode Completo',
+                    'SIDEA Completo',
                     c.whatsapp,
                     c.email || '',
                     c.estado,
@@ -975,7 +975,7 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `clientes_trikode_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = `clientes_sidea_${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
         }
         
@@ -995,7 +995,7 @@
                       `Rubro: ${cliente.rubro}\n` +
                         `Vendedor: ${cliente.vendedor_nombre || 'Sin vendedor'}\n` +
                         `Código vendedor: ${cliente.vendedor_codigo || '-'}\n` +
-                        `Plan: Trikode Completo\n` +
+                        `Plan: SIDEA Completo\n` +
                       `WhatsApp: ${cliente.whatsapp}\n` +
                       `Email: ${cliente.email || 'No especificado'}\n` +
                       `Estado: ${cliente.estado}\n` +

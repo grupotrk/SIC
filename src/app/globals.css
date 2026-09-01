@@ -529,3 +529,103 @@ html.dark .app-brand-logo,[data-theme="dark"] .app-brand-logo{
 html:not(.dark) .app-brand-logo,[data-theme="light"] .app-brand-logo{
  filter:drop-shadow(0 5px 12px rgba(7,17,31,.10));
 }
+
+
+/* =========================================================
+   SIDEA — Suscripción / feedback del OWNER
+   ========================================================= */
+.subscription-notice{
+  position:relative; overflow:hidden; padding:18px 20px;
+  border:1px solid color-mix(in srgb,var(--app-accent) 26%,var(--app-border));
+  border-left:3px solid var(--app-accent-strong); border-radius:12px;
+  background:color-mix(in srgb,var(--app-accent) 5%,var(--app-surface));
+  color:var(--app-text); box-shadow:var(--app-shadow-soft);
+}
+.subscription-notice--trial{
+  background:color-mix(in srgb,var(--app-accent) 7%,var(--app-surface));
+}
+.subscription-notice-copy h3{
+  margin:3px 0 0; color:var(--app-text); font-size:15px;
+  font-weight:750; letter-spacing:-.01em;
+}
+.subscription-notice-copy p{
+  margin:5px 0 0; color:var(--app-muted); font-size:12.5px; line-height:1.55;
+}
+.subscription-notice-copy strong{color:var(--app-text);}
+.subscription-eyebrow{
+  display:block; color:var(--app-accent-strong); font-size:9px;
+  font-weight:850; letter-spacing:.13em;
+}
+.subscription-eyebrow--danger{color:var(--app-danger);}
+.subscription-primary-button,.subscription-secondary-button,.subscription-danger-button{
+  border-radius:8px; border:1px solid transparent; min-height:36px;
+  padding:0 15px; font-size:12px; font-weight:750; cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,opacity .15s ease;
+}
+.subscription-primary-button{
+  background:var(--sidea-blue-600); border-color:var(--sidea-blue-600); color:#fff;
+}
+.subscription-primary-button:hover:not(:disabled){background:#1d4ed8;border-color:#1d4ed8;}
+.subscription-feedback-grid{
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px;
+}
+.subscription-panel{
+  padding:18px; border:1px solid var(--app-border); border-radius:12px;
+  background:var(--app-surface); color:var(--app-text); box-shadow:var(--app-shadow-soft);
+}
+.subscription-panel--danger{
+  border-color:color-mix(in srgb,var(--app-danger) 34%,var(--app-border));
+  background:color-mix(in srgb,var(--app-danger) 3%,var(--app-surface));
+}
+.subscription-panel-heading h3{
+  margin:3px 0 0; color:var(--app-text); font-size:15px; font-weight:750;
+}
+.subscription-panel-description{
+  margin:6px 0 13px; color:var(--app-muted); font-size:12.5px; line-height:1.5;
+}
+.subscription-textarea{
+  display:block; width:100%; resize:vertical; border:1px solid var(--app-border-strong);
+  border-radius:8px; background:var(--app-surface-2); color:var(--app-text);
+  padding:10px 11px; font:inherit; font-size:12.5px; line-height:1.45;
+}
+.subscription-textarea::placeholder{color:var(--app-faint);}
+.subscription-check-label{
+  display:flex; align-items:center; gap:8px; margin-top:10px;
+  color:var(--app-muted); font-size:12px; line-height:1.35; cursor:pointer;
+}
+.subscription-check-label input{
+  width:14px; height:14px; margin:0; accent-color:var(--sidea-blue-600); flex:none;
+}
+.subscription-reasons{display:grid;gap:2px;margin-bottom:12px;}
+.subscription-reasons .subscription-check-label{margin-top:7px;}
+.subscription-secondary-button,.subscription-danger-button{width:100%;margin-top:12px;}
+.subscription-secondary-button{
+  background:var(--app-surface-3); border-color:var(--app-border-strong); color:var(--app-text);
+}
+.subscription-secondary-button:hover:not(:disabled){
+  border-color:var(--app-accent);
+  background:color-mix(in srgb,var(--app-accent) 7%,var(--app-surface-3));
+}
+.subscription-danger-button{
+  background:color-mix(in srgb,var(--app-danger) 10%,var(--app-surface));
+  border-color:color-mix(in srgb,var(--app-danger) 42%,var(--app-border));
+  color:var(--app-danger);
+}
+.subscription-danger-button:hover:not(:disabled){
+  background:color-mix(in srgb,var(--app-danger) 16%,var(--app-surface));
+}
+.subscription-primary-button:disabled,.subscription-secondary-button:disabled,.subscription-danger-button:disabled{
+  opacity:.5; cursor:not-allowed;
+}
+html[data-theme='dark'] .subscription-notice{
+  background:color-mix(in srgb,var(--sidea-blue-500) 8%,var(--app-surface));
+}
+html[data-theme='dark'] .subscription-panel--danger{
+  background:color-mix(in srgb,var(--app-danger) 4%,var(--app-surface));
+}
+html[data-theme='dark'] .subscription-textarea{background:#0b1523!important;}
+@media(max-width:820px){
+  .subscription-feedback-grid{grid-template-columns:1fr;}
+  .subscription-notice{padding:16px;}
+  .subscription-primary-button{width:100%;}
+}

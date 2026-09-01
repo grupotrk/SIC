@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 type Cliente = {
   id: string
+  tenant_id?: string | null
   nombre_comercio: string
   rubro: string
   whatsapp: string
@@ -72,6 +73,11 @@ export default function AdminDashboardPage() {
   const [showNewCommerce, setShowNewCommerce] = useState(false)
   const [newCommerce, setNewCommerce] = useState({ nombre_comercio: '', rubro: 'Kiosco', whatsapp: '', email: '', owner_nombre: '', owner_username: '', owner_password: '', trial_days: 7 })
   const [creatingCommerce, setCreatingCommerce] = useState(false)
+
+  // Eliminación definitiva de tenants de prueba / altas erróneas
+  const [commerceToDelete, setCommerceToDelete] = useState<Cliente | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [deletingCommerce, setDeletingCommerce] = useState(false)
 
   // Notificaciones
   const [notifLogs, setNotifLogs] = useState<NotifLog[]>([])
@@ -271,6 +277,54 @@ export default function AdminDashboardPage() {
       setStatusMessage(e instanceof Error ? e.message : 'No se pudo crear el comercio.')
     } finally {
       setCreatingCommerce(false)
+    }
+  }
+
+
+  const deleteCommercePermanently = async () => {
+    if (!commerceToDelete?.tenant_id || deletingCommerce) return
+
+    const expected = commerceToDelete.nombre_comercio.trim()
+    if (deleteConfirmation.trim() !== expected) {
+      setStatusMessage(`Escribí exactamente “${expected}” para confirmar la eliminación.`)
+      return
+    }
+
+    try {
+      setDeletingCommerce(true)
+      setStatusMessage(`Eliminando definitivamente ${expected}...`)
+
+      const res = await fetch('/api/admin-delete-commerce', {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant_id: commerceToDelete.tenant_id,
+          confirm_name: deleteConfirmation.trim(),
+        }),
+      })
+
+      const payload = await res.json().catch(() => null)
+      if (!res.ok || !payload?.ok) {
+        const code = payload?.error || 'unexpected'
+        const messages: Record<string, string> = {
+          commerce_not_found: 'El comercio ya no existe.',
+          confirmation_mismatch: 'El nombre de confirmación no coincide.',
+          protected_tenant: 'Ese tenant está reservado como sandbox de un Superadmin y no se puede eliminar desde acá.',
+          tenant_delete_failed: 'No se pudo borrar completamente el tenant. No se eliminó el usuario de Auth.',
+          auth_delete_failed: 'Los datos del tenant se borraron, pero no se pudo eliminar uno de sus usuarios de Auth.',
+        }
+        throw new Error(messages[code] || `No se pudo eliminar el comercio (${code}).`)
+      }
+
+      setCommerceToDelete(null)
+      setDeleteConfirmation('')
+      await loadClients()
+      setStatusMessage(`“${expected}” fue eliminado definitivamente, incluidos sus usuarios de acceso.`)
+    } catch (e) {
+      setStatusMessage(e instanceof Error ? e.message : 'No se pudo eliminar el comercio.')
+    } finally {
+      setDeletingCommerce(false)
     }
   }
 
@@ -642,11 +696,20 @@ export default function AdminDashboardPage() {
                               </a>
                               {cliente.email && (
                                 <a
-                                  href={`mailto:${cliente.email}?subject=Trikode%20-%20Tu%20suscripción`}
+                                  href={`mailto:${cliente.email}?subject=SIDEA%20-%20Tu%20suscripción`}
                                   className="rounded border border-white/20 bg-white/10 px-3 py-2 text-xs hover:bg-white/20"
                                 >
                                   Email
                                 </a>
+                              )}
+                              {cliente.tenant_id && (
+                                <button
+                                  type="button"
+                                  onClick={() => { setCommerceToDelete(cliente); setDeleteConfirmation('') }}
+                                  className="rounded border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs text-red-200 hover:bg-red-500/20"
+                                >
+                                  Eliminar
+                                </button>
                               )}
                             </div>
                           </td>
@@ -655,6 +718,54 @@ export default function AdminDashboardPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+
+          {commerceToDelete && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm">
+              <div className="w-full max-w-lg rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl">
+                <div className="mb-5">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-red-300">Zona peligrosa</div>
+                  <h2 className="mt-1 text-2xl font-bold text-white">Eliminar comercio definitivamente</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    Se eliminarán el tenant, productos, ventas, stock, turnos, cierres, usuarios vinculados y sus cuentas de acceso. Esta acción no se puede deshacer.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-100">
+                  Vas a eliminar <strong>{commerceToDelete.nombre_comercio}</strong>.
+                </div>
+
+                <label className="mt-5 block text-sm text-slate-300">
+                  Escribí <strong className="text-white">{commerceToDelete.nombre_comercio}</strong> para confirmar
+                  <input
+                    autoFocus
+                    value={deleteConfirmation}
+                    onChange={(e) => setDeleteConfirmation(e.target.value)}
+                    className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-white outline-none focus:border-red-400"
+                  />
+                </label>
+
+                <div className="mt-6 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    disabled={deletingCommerce}
+                    onClick={() => { setCommerceToDelete(null); setDeleteConfirmation('') }}
+                    className="rounded-lg border border-slate-700 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    disabled={deletingCommerce || deleteConfirmation.trim() !== commerceToDelete.nombre_comercio.trim()}
+                    onClick={() => void deleteCommercePermanently()}
+                    className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {deletingCommerce ? 'Eliminando...' : 'Eliminar definitivamente'}
+                  </button>
+                </div>
               </div>
             </div>
           )}

@@ -1,68 +1,47 @@
 import { NextResponse } from 'next/server'
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'crypto'
+import { getSupabaseAdmin, getSupabaseAuthVerifier } from '@/lib/supabaseServer'
+import { signAdminToken } from '@/lib/adminAuth'
 
-function mustGetEnv(name: string): string {
-  const v = process.env[name]
-  if (!v) throw new Error(`Missing env var: ${name}`)
-  return v
-}
+function maybeGetEnv(name: string): string { return (process.env[name] || '').trim() }
+function mustGetEnv(name: string): string { const v = maybeGetEnv(name); if (!v) throw new Error(`Missing env var: ${name}`); return v }
 
-type AttemptState = {
-  fails: number
-  blockedUntil: number
-}
-
+type AttemptState = { fails: number; blockedUntil: number }
 const attempts = new Map<string, AttemptState>()
 const MAX_ATTEMPTS = 5
 const BLOCK_MS = 15 * 60 * 1000
 
-// Comparación en tiempo constante para prevenir timing attacks
 function safeEqual(a: string, b: string): boolean {
   const key = randomBytes(32)
   const ha = createHmac('sha256', key).update(a).digest()
   const hb = createHmac('sha256', key).update(b).digest()
-  // require both buffers to match AND have the same length
   return timingSafeEqual(ha, hb) && a.length === b.length
 }
-
 function getClientKey(req: Request): string {
-  const xff = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const realIp = req.headers.get('x-real-ip')?.trim()
-  return xff || realIp || 'unknown'
+  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip')?.trim() || 'unknown'
 }
-
 function jsonNoStore(body: unknown, status: number) {
-  return NextResponse.json(body, {
-    status,
-    headers: {
-      'Cache-Control': 'no-store',
-      Pragma: 'no-cache',
-    },
-  })
+  return NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store', Pragma: 'no-cache' } })
 }
-
-function signToken(payload: string, secret: string): string {
-  const encoded = Buffer.from(payload).toString('base64url')
-  const sig = createHmac('sha256', secret).update(encoded).digest('base64url')
-  return `${encoded}.${sig}`
-}
-
 function verifyPassword(password: string, encodedHash: string): boolean {
-  // Formato recomendado: scrypt:<salt_hex>:<hash_hex>
-  // Compatibilidad legacy: scrypt$<salt_hex>$<hash_hex>
   const separator = encodedHash.includes(':') ? ':' : '$'
   const parts = encodedHash.split(separator)
   if (parts.length !== 3 || parts[0] !== 'scrypt') return false
   const [, saltHex, hashHex] = parts
-  let expected: Buffer
-  try {
-    expected = Buffer.from(hashHex, 'hex')
-  } catch {
-    return false
-  }
-  if (expected.length === 0) return false
+  const expected = Buffer.from(hashHex, 'hex')
+  if (!expected.length) return false
   const derived = scryptSync(password, Buffer.from(saltHex, 'hex'), expected.length)
   return derived.length === expected.length && timingSafeEqual(derived, expected)
+}
+function setAdminCookie(res: NextResponse, payload: Parameters<typeof signAdminToken>[0]) {
+  const token = signAdminToken(payload, mustGetEnv('ADMIN_JWT_SECRET'))
+  res.cookies.set('admin_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 86400,
+    path: '/',
+  })
 }
 
 export async function POST(req: Request) {
@@ -77,56 +56,55 @@ export async function POST(req: Request) {
 
   try {
     const body = (await req.json().catch(() => null)) as null | Record<string, unknown>
-    if (!body) {
-      return jsonNoStore({ ok: false, error: 'invalid_input' }, 400)
+    const username = typeof body?.username === 'string' ? body.username.trim() : ''
+    const password = typeof body?.password === 'string' ? body.password : ''
+    if (!username || !password) return jsonNoStore({ ok: false, error: 'missing_fields' }, 400)
+
+    // 1) Cuenta bootstrap legacy. Se conserva como acceso de emergencia durante la migración.
+    const legacyUser = maybeGetEnv('ADMIN_USERNAME')
+    const legacyHash = maybeGetEnv('ADMIN_PASSWORD_HASH')
+    if (legacyUser && legacyHash && safeEqual(username, legacyUser) && verifyPassword(password, legacyHash)) {
+      attempts.delete(clientKey)
+      const res = jsonNoStore({ ok: true, source: 'legacy', requires_password_change: false }, 200)
+      setAdminCookie(res, { sub: 'admin', exp: Date.now() + 86400000, source: 'legacy', nombre: 'Admin SIDEA' })
+      return res
     }
 
-    const username = typeof body.username === 'string' ? body.username.trim() : ''
-    const password = typeof body.password === 'string' ? body.password : ''
+    // 2) SUPERADMIN individual en Supabase Auth.
+    const auth = getSupabaseAuthVerifier()
+    const signedIn = await auth.auth.signInWithPassword({ email: username.toLowerCase(), password })
+    const user = signedIn.data.user
+    if (!user?.id || signedIn.error) throw new Error('invalid_credentials')
 
-    if (!username || !password) {
-      return jsonNoStore({ ok: false, error: 'missing_fields' }, 400)
-    }
+    const db = getSupabaseAdmin()
+    const adminRow = await db
+      .from('super_admin_users')
+      .select('id,activo,email,metadata')
+      .eq('auth_user_id', user.id)
+      .maybeSingle()
 
-    const adminUser = mustGetEnv('ADMIN_USERNAME')
-    const adminPassHash = mustGetEnv('ADMIN_PASSWORD_HASH')
-    const secret = mustGetEnv('ADMIN_JWT_SECRET')
+    if (adminRow.error || !adminRow.data?.activo) throw new Error('invalid_credentials')
 
-    const userMatch = safeEqual(username, adminUser)
-    const passMatch = verifyPassword(password, adminPassHash)
-
-    if (!userMatch || !passMatch) {
-      // Delay aleatorio para dificultar brute-force
-      await new Promise((r) => setTimeout(r, 500 + Math.random() * 500))
-
-      const nextFails = state.fails + 1
-      if (nextFails >= MAX_ATTEMPTS) {
-        attempts.set(clientKey, { fails: 0, blockedUntil: Date.now() + BLOCK_MS })
-      } else {
-        attempts.set(clientKey, { fails: nextFails, blockedUntil: 0 })
-      }
-
-      return jsonNoStore({ ok: false, error: 'invalid_credentials' }, 401)
-    }
+    const metadata = (adminRow.data.metadata || {}) as Record<string, unknown>
+    const nombre = String(metadata.nombre || user.user_metadata?.nombre || user.email || 'Superadmin')
+    const mustChangePassword = Boolean(user.user_metadata?.must_change_password ?? metadata.must_change_password)
 
     attempts.delete(clientKey)
-
-    const expiresAt = Date.now() + 24 * 60 * 60 * 1000
-    const token = signToken(JSON.stringify({ sub: 'admin', exp: expiresAt }), secret)
-
-    const res = jsonNoStore({ ok: true }, 200)
-    res.cookies.set('admin_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 86400,
-      path: '/',
+    const res = jsonNoStore({ ok: true, source: 'supabase', requires_password_change: mustChangePassword }, 200)
+    setAdminCookie(res, {
+      sub: 'admin', exp: Date.now() + 86400000, source: 'supabase', authUserId: user.id,
+      email: user.email || adminRow.data.email, nombre, mustChangePassword,
     })
     return res
   } catch (error) {
     if (error instanceof Error && error.message.startsWith('Missing env var:')) {
       return jsonNoStore({ ok: false, error: 'server_not_configured' }, 503)
     }
-    return jsonNoStore({ ok: false, error: 'unexpected' }, 500)
+    const nextFails = state.fails + 1
+    attempts.set(clientKey, nextFails >= MAX_ATTEMPTS
+      ? { fails: 0, blockedUntil: Date.now() + BLOCK_MS }
+      : { fails: nextFails, blockedUntil: 0 })
+    await new Promise((r) => setTimeout(r, 400 + Math.random() * 400))
+    return jsonNoStore({ ok: false, error: 'invalid_credentials' }, 401)
   }
 }

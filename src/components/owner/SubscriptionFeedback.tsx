@@ -208,14 +208,12 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
 
       {/* Período de prueba activo */}
       {subscription?.isTrial && subscription.status === 'ACTIVO' && (
-        <div className="mb-6 rounded-xl border border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 p-5">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">🎁</span>
-                <h3 className="text-base font-semibold text-violet-900">Período de prueba gratuito</h3>
-              </div>
-              <p className="text-sm text-violet-700">
+        <div className="subscription-notice subscription-notice--trial mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="subscription-notice-copy">
+              <span className="subscription-eyebrow">PRUEBA GRATUITA</span>
+              <h3>Período de prueba activo</h3>
+              <p>
                 Tu prueba vence el{' '}
                 <strong>
                   {subscription.dueDate
@@ -233,7 +231,7 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
               id="btn-activar-suscripcion"
               onClick={renovarSuscripcion}
               disabled={renovandoSuscripcion}
-              className="shrink-0 rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-violet-700 disabled:opacity-60 transition-colors"
+              className="subscription-primary-button shrink-0"
             >
               {renovandoSuscripcion ? 'Generando link...' : 'Activar suscripción →'}
             </button>
@@ -243,17 +241,18 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
 
       {/* Renovación — visible cuando venció o está por vencer */}
       {showRenewal && (
-        <div className="mb-6 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-5">
+        <div className="subscription-notice mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h3 className="text-base font-semibold text-blue-900">{subscription?.isTrial ? 'Activar suscripción' : 'Renovar suscripción'}</h3>
-              <p className="mt-1 text-sm text-blue-700">{renewalMessage()}</p>
+            <div className="subscription-notice-copy">
+              <span className="subscription-eyebrow">SUSCRIPCIÓN</span>
+              <h3>{subscription?.isTrial ? 'Activar suscripción' : 'Renovar suscripción'}</h3>
+              <p>{renewalMessage()}</p>
             </div>
             <button
               id="btn-renovar-suscripcion"
               onClick={renovarSuscripcion}
               disabled={renovandoSuscripcion}
-              className="shrink-0 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60 transition-colors"
+              className="subscription-primary-button shrink-0"
             >
               {renovandoSuscripcion ? 'Generando link...' : 'Pagar suscripción →'}
             </button>
@@ -261,45 +260,51 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded border border-slate-200 bg-slate-50 p-4">
-          <h3 className="text-lg font-semibold mb-2">Opiniones y sugerencias</h3>
-          <p className="text-sm text-slate-600 mb-3">
+      <div className="subscription-feedback-grid mt-6">
+        <div className="subscription-panel">
+          <div className="subscription-panel-heading">
+            <span className="subscription-eyebrow">FEEDBACK</span>
+            <h3>Opiniones y sugerencias</h3>
+          </div>
+          <p className="subscription-panel-description">
             Queremos mejorar el SIC en base a lo que piden los comercios activos.
           </p>
           <textarea
             rows={4}
             value={suggestionText}
             onChange={(e) => setSuggestionText(e.target.value)}
-            className="w-full rounded border border-slate-300 p-2"
-            placeholder="Contanos qué cambio te gustaría ver en Trikode SIC"
+            className="subscription-textarea"
+            placeholder="Contanos qué cambio te gustaría ver en SIDEA SIC"
           />
-          <label className="mt-2 flex items-center gap-2 text-sm text-slate-700">
+          <label className="subscription-check-label">
             <input
               type="checkbox"
               checked={suggestionAllowContact}
               onChange={(e) => setSuggestionAllowContact(e.target.checked)}
             />
-            Pueden contactarme para profundizar esta sugerencia.
+            <span>Pueden contactarme para profundizar esta sugerencia.</span>
           </label>
           <button
             onClick={enviarSugerencia}
             disabled={sendingSuggestion || subscription?.accessMode !== 'FULL'}
-            className="mt-3 w-full rounded bg-emerald-600 px-3 py-2 text-white font-semibold hover:bg-emerald-700 disabled:opacity-60"
+            className="subscription-secondary-button"
           >
             {sendingSuggestion ? 'Enviando...' : 'Enviar sugerencia'}
           </button>
         </div>
 
-        <div className="rounded border border-rose-200 bg-rose-50 p-4">
-          <h3 className="text-lg font-semibold text-rose-800 mb-2">Botón de arrepentimiento</h3>
-          <p className="text-sm text-rose-700 mb-3">
+        <div className="subscription-panel subscription-panel--danger">
+          <div className="subscription-panel-heading">
+            <span className="subscription-eyebrow subscription-eyebrow--danger">CANCELACIÓN</span>
+            <h3>Botón de arrepentimiento</h3>
+          </div>
+          <p className="subscription-panel-description">
             Si querés darte de baja, seleccioná motivos para ayudarnos a mejorar.
           </p>
 
-          <div className="space-y-2 mb-3">
+          <div className="subscription-reasons">
             {CANCEL_REASONS.map((reason) => (
-              <label key={reason} className="flex items-center gap-2 text-sm text-rose-800">
+              <label key={reason} className="subscription-check-label">
                 <input
                   type="checkbox"
                   checked={cancelReasons.includes(reason)}
@@ -311,7 +316,7 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
                     }
                   }}
                 />
-                {reason}
+                <span>{reason}</span>
               </label>
             ))}
           </div>
@@ -320,21 +325,21 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
             rows={3}
             value={cancelDetail}
             onChange={(e) => setCancelDetail(e.target.value)}
-            className="w-full rounded border border-rose-300 p-2 text-sm"
+            className="subscription-textarea"
             placeholder="¿Algo más que quieras decirnos? (Opcional)"
           />
-          <label className="mt-2 flex items-center gap-2 text-sm text-rose-800">
+          <label className="subscription-check-label">
             <input
               type="checkbox"
               checked={cancelAllowContact}
               onChange={(e) => setCancelAllowContact(e.target.checked)}
             />
-            Pueden contactarme para consultar.
+            <span>Pueden contactarme para consultar.</span>
           </label>
           <button
             onClick={solicitarBaja}
             disabled={sendingCancel || cancelReasons.length === 0}
-            className="mt-3 w-full rounded bg-rose-700 px-3 py-2 text-white font-semibold hover:bg-rose-800 disabled:opacity-60"
+            className="subscription-danger-button"
           >
             {sendingCancel ? 'Procesando...' : 'Solicitar baja voluntaria'}
           </button>
