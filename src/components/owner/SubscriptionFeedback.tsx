@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { type SubscriptionComputed } from '@/lib/subscriptionLifecycle'
 
@@ -28,6 +28,8 @@ function daysUntilDue(dueDate: string | null): number | null {
 
 export default function SubscriptionFeedback({ subscription, onSubscriptionChanged }: Props) {
   const [renovandoSuscripcion, setRenovandoSuscripcion] = useState(false)
+  const [paymentsEnabled, setPaymentsEnabled] = useState(false)
+  const [paymentStatusLoaded, setPaymentStatusLoaded] = useState(false)
   const [suggestionText, setSuggestionText] = useState('')
   const [suggestionAllowContact, setSuggestionAllowContact] = useState(true)
   const [sendingSuggestion, setSendingSuggestion] = useState(false)
@@ -37,14 +39,30 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
   const [sendingCancel, setSendingCancel] = useState(false)
   const [mensaje, setMensaje] = useState<{ tipo: 'error' | 'success'; texto: string } | null>(null)
 
-  // Muestra el botón de renovación cuando: está en gracia, solo descarga,
-  // o activo con 7 días o menos hasta el vencimiento.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/payments/status', { cache: 'no-store' })
+      .then((response) => response.json())
+      .then((payload) => {
+        if (!cancelled) setPaymentsEnabled(Boolean(payload?.ok && payload?.enabled))
+      })
+      .catch(() => {
+        if (!cancelled) setPaymentsEnabled(false)
+      })
+      .finally(() => {
+        if (!cancelled) setPaymentStatusLoaded(true)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  // Muestra renovación para cuentas pagas próximas a vencer, en gracia o solo descarga.
+  // Durante el trial usamos un único bloque para evitar mensajes duplicados.
   const daysLeft = daysUntilDue(subscription?.dueDate ?? null)
   const showRenewal =
     subscription != null &&
     (subscription.status === 'EN_GRACIA' ||
       subscription.status === 'SOLO_DESCARGA' ||
-      (subscription.status === 'ACTIVO' && daysLeft !== null && daysLeft <= 7))
+      (subscription.status === 'ACTIVO' && !subscription.isTrial && daysLeft !== null && daysLeft <= 7))
 
   const renewalMessage = () => {
     if (!subscription) return ''
@@ -59,6 +77,10 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
   }
 
   const renovarSuscripcion = async () => {
+    if (!paymentsEnabled) {
+      setMensaje({ tipo: 'success', texto: 'Los pagos online estarán disponibles próximamente.' })
+      return
+    }
     setRenovandoSuscripcion(true)
     setMensaje(null)
     try {
@@ -227,14 +249,18 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
                 . Cuando quieras continuar, activá tu suscripción mensual.
               </p>
             </div>
-            <button
-              id="btn-activar-suscripcion"
-              onClick={renovarSuscripcion}
-              disabled={renovandoSuscripcion}
-              className="subscription-primary-button shrink-0"
-            >
-              {renovandoSuscripcion ? 'Generando link...' : 'Activar suscripción →'}
-            </button>
+            {paymentsEnabled ? (
+              <button
+                id="btn-activar-suscripcion"
+                onClick={renovarSuscripcion}
+                disabled={renovandoSuscripcion}
+                className="subscription-primary-button shrink-0"
+              >
+                {renovandoSuscripcion ? 'Generando link...' : 'Activar suscripción →'}
+              </button>
+            ) : paymentStatusLoaded ? (
+              <span className="shrink-0 text-sm font-medium text-slate-300">Pagos online próximamente</span>
+            ) : null}
           </div>
         </div>
       )}
@@ -248,14 +274,18 @@ export default function SubscriptionFeedback({ subscription, onSubscriptionChang
               <h3>{subscription?.isTrial ? 'Activar suscripción' : 'Renovar suscripción'}</h3>
               <p>{renewalMessage()}</p>
             </div>
-            <button
-              id="btn-renovar-suscripcion"
-              onClick={renovarSuscripcion}
-              disabled={renovandoSuscripcion}
-              className="subscription-primary-button shrink-0"
-            >
-              {renovandoSuscripcion ? 'Generando link...' : 'Pagar suscripción →'}
-            </button>
+            {paymentsEnabled ? (
+              <button
+                id="btn-renovar-suscripcion"
+                onClick={renovarSuscripcion}
+                disabled={renovandoSuscripcion}
+                className="subscription-primary-button shrink-0"
+              >
+                {renovandoSuscripcion ? 'Generando link...' : 'Pagar suscripción →'}
+              </button>
+            ) : paymentStatusLoaded ? (
+              <span className="shrink-0 text-sm font-medium text-slate-300">Pagos online próximamente</span>
+            ) : null}
           </div>
         </div>
       )}

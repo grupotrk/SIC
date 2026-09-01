@@ -26,6 +26,7 @@ type Cliente = {
   owner_last_invite_at?: string | null
   owner_last_invite_status?: string | null
   owner_last_invite_error?: string | null
+  commerce_active?: boolean | null
 }
 
 type NotifLog = {
@@ -78,6 +79,7 @@ export default function AdminDashboardPage() {
   const [commerceToDelete, setCommerceToDelete] = useState<Cliente | null>(null)
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
   const [deletingCommerce, setDeletingCommerce] = useState(false)
+  const [changingCommerceStatus, setChangingCommerceStatus] = useState<string | null>(null)
 
   // Notificaciones
   const [notifLogs, setNotifLogs] = useState<NotifLog[]>([])
@@ -280,6 +282,28 @@ export default function AdminDashboardPage() {
     }
   }
 
+
+  const setCommerceActive = async (cliente: Cliente, active: boolean) => {
+    if (!cliente.tenant_id) return
+    setChangingCommerceStatus(cliente.tenant_id)
+    setStatusMessage(active ? 'Reactivando comercio...' : 'Desactivando comercio...')
+    try {
+      const res = await fetch('/api/admin-commerce-status', {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant_id: cliente.tenant_id, active }),
+      })
+      const payload = await res.json().catch(() => null)
+      if (!res.ok || !payload?.ok) throw new Error(active ? 'No se pudo reactivar el comercio.' : 'No se pudo desactivar el comercio.')
+      setStatusMessage(active ? 'Comercio reactivado.' : 'Comercio desactivado. Conserva sus datos pero no puede operar.')
+      await loadClients()
+    } catch (e) {
+      setStatusMessage(e instanceof Error ? e.message : 'No se pudo cambiar el estado del comercio.')
+    } finally {
+      setChangingCommerceStatus(null)
+    }
+  }
 
   const deleteCommercePermanently = async () => {
     if (!commerceToDelete?.tenant_id || deletingCommerce) return
@@ -639,13 +663,18 @@ export default function AdminDashboardPage() {
                     {filteredClientes.map((cliente) => {
                       const comisionMensual = Number(cliente.comision_mensual) || 0
                       const dias = Number(cliente.dias_transcurridos) || 0
-                      const wspMsg = encodeURIComponent(`Hola ${cliente.nombre_comercio}, soy Diego de Trikode. Te contacto por tu suscripción.`)
+                      const wspMsg = encodeURIComponent(`Hola ${cliente.nombre_comercio}, soy Diego de SIDEA. Te contacto por tu suscripción.`)
 
                       return (
                         <tr key={cliente.id} className="border-b border-slate-800/70 hover:bg-white/5">
                           <td className="p-4">
                             <div className="font-semibold">{cliente.nombre_comercio}</div>
                             {cliente.email && <div className="text-xs text-slate-400">{cliente.email}</div>}
+                            {cliente.tenant_id && cliente.commerce_active === false && (
+                              <div className="mt-2 inline-flex rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-200">
+                                Comercio desactivado
+                              </div>
+                            )}
 
                             {cliente.owner_activation_needs_attention && (
                               <div className="mt-2">
@@ -675,7 +704,7 @@ export default function AdminDashboardPage() {
                             <span className="rounded bg-white/10 px-2 py-1 text-xs">{cliente.vendedor_codigo || '-'}</span>
                           </td>
                           <td className="p-4">
-                            <span className="rounded bg-white/10 px-2 py-1 text-xs">Trikode Completo</span>
+                            <span className="rounded bg-white/10 px-2 py-1 text-xs">SIDEA Completo</span>
                           </td>
                           <td className="p-4">{cliente.whatsapp}</td>
                           <td className="p-4">
@@ -703,13 +732,25 @@ export default function AdminDashboardPage() {
                                 </a>
                               )}
                               {cliente.tenant_id && (
-                                <button
-                                  type="button"
-                                  onClick={() => { setCommerceToDelete(cliente); setDeleteConfirmation('') }}
-                                  className="rounded border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs text-red-200 hover:bg-red-500/20"
-                                >
-                                  Eliminar
-                                </button>
+                                <>
+                                  <button
+                                    type="button"
+                                    disabled={changingCommerceStatus === cliente.tenant_id}
+                                    onClick={() => void setCommerceActive(cliente, cliente.commerce_active === false)}
+                                    className="rounded border border-blue-500/35 bg-blue-500/10 px-3 py-2 text-xs text-blue-100 hover:bg-blue-500/20 disabled:opacity-50"
+                                  >
+                                    {changingCommerceStatus === cliente.tenant_id
+                                      ? 'Guardando...'
+                                      : cliente.commerce_active === false ? 'Reactivar' : 'Desactivar'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => { setCommerceToDelete(cliente); setDeleteConfirmation('') }}
+                                    className="rounded border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs text-red-200 hover:bg-red-500/20"
+                                  >
+                                    Eliminar
+                                  </button>
+                                </>
                               )}
                             </div>
                           </td>
@@ -1169,7 +1210,7 @@ function exportCsv(clientes: Cliente[]) {
       c.rubro,
       c.vendedor_nombre || '',
       c.vendedor_codigo || '',
-      'Trikode Completo',
+      'SIDEA Completo',
       c.whatsapp,
       c.email || '',
       c.estado,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabaseServer'
+import { getPaymentConfig } from '@/lib/paymentConfig'
 
 function getBearerToken(req: Request): string | null {
   const authHeader = req.headers.get('authorization') || ''
@@ -13,6 +14,11 @@ function maybeGetEnv(name: string): string {
 
 export async function POST(req: Request) {
   try {
+    const paymentConfig = getPaymentConfig()
+    if (!paymentConfig.enabled || paymentConfig.provider !== 'mercadopago') {
+      return NextResponse.json({ ok: false, error: 'payment_not_configured' }, { status: 503 })
+    }
+
     const accessToken = getBearerToken(req)
     if (!accessToken) {
       return NextResponse.json({ ok: false, error: 'missing_token' }, { status: 401 })
@@ -55,17 +61,13 @@ export async function POST(req: Request) {
     }
 
     const mpToken = maybeGetEnv('MERCADOPAGO_ACCESS_TOKEN')
-    if (!mpToken) {
-      return NextResponse.json({ ok: false, error: 'payment_not_configured' }, { status: 503 })
-    }
-
-    const amount = parseInt(maybeGetEnv('SUBSCRIPTION_PRICE') || '40000', 10)
+    const amount = Number.isFinite(paymentConfig.amount) ? paymentConfig.amount : 40000
     const backUrl = maybeGetEnv('PAYMENT_SUCCESS_URL')
 
     const body: Record<string, unknown> = {
       items: [
         {
-          title: `Trikode SIC · Renovación mensual — ${comercio.nombre || 'Comercio'}`,
+          title: `SIDEA SIC · Renovación mensual — ${comercio.nombre || 'Comercio'}`,
           quantity: 1,
           currency_id: 'ARS',
           unit_price: amount,

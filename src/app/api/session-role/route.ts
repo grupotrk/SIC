@@ -115,6 +115,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'role_not_configured' }, { status: 403 })
     }
 
+    if (!isSuperAdmin && comercioUsuario) {
+      const commerceRes = await supabase
+        .from('comercios')
+        .select('activo,depurado_at')
+        .eq('tenant_id', comercioUsuario.tenant_id)
+        .maybeSingle()
+
+      if (commerceRes.error || !commerceRes.data || commerceRes.data.activo !== true || commerceRes.data.depurado_at) {
+        return NextResponse.json({ ok: false, error: 'commerce_inactive' }, { status: 403 })
+      }
+    }
+
     const role: AppRole = isSuperAdmin ? 'SUPERADMIN' : comercioUsuario!.rol
     if (!isAppRole(role)) {
       return NextResponse.json({ ok: false, error: 'invalid_role' }, { status: 403 })

@@ -78,6 +78,7 @@ type ClienteEstadoRow = LeadRow & {
   owner_last_invite_at: string | null
   owner_last_invite_status: 'sent' | 'failed' | null
   owner_last_invite_error: string | null
+  commerce_active: boolean | null
 }
 
 function isPlaceholder(v: string | undefined): boolean {
@@ -131,6 +132,7 @@ function enrichLead(row: LeadRow): ClienteEstadoRow {
     comision_mensual: 0,
     ingreso_neto_mensual: Number(row.plan_precio ?? 40000),
     tenant_id: null,
+    commerce_active: null,
     owner_auth_user_id: null,
     owner_activation_status: billingStatus === 'PAGADO' ? 'manual_review' : 'not_paid',
     owner_activation_label: null,
@@ -332,6 +334,7 @@ async function attachOwnerActivationData(
         ...row,
         ...lifecycle,
         tenant_id: commerce?.tenant_id ?? row.tenant_id,
+        commerce_active: commerce?.activo ?? row.commerce_active,
         owner_auth_user_id: owner?.auth_user_id ?? row.owner_auth_user_id,
         owner_activation_status: 'ready',
         owner_activation_label: null,
@@ -345,6 +348,7 @@ async function attachOwnerActivationData(
         ...row,
         ...lifecycle,
         tenant_id: commerce.tenant_id,
+        commerce_active: commerce.activo ?? true,
         owner_activation_status: metadataStatus === 'SIN_EMAIL_OWNER' ? 'missing_email' : 'pending_invitation',
         owner_activation_label:
           metadataStatus === 'SIN_EMAIL_OWNER' ? 'Falta email del OWNER' : 'Activación OWNER pendiente',

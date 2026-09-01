@@ -12,7 +12,8 @@
     "ref:generate": "node scripts/generate-referral-codes.mjs",
     "test:create-user": "tsx scripts/test_create_user.ts",
     "seed:auditoria": "tsx scripts/seed_auditoria_tenants.ts",
-    "seed:audit-demo": "tsx scripts/seed_audit_demo.ts"
+    "seed:audit-demo": "tsx scripts/seed_audit_demo.ts",
+    "prod:check": "node --env-file=.env.local scripts/check-production-env.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
