@@ -68,16 +68,29 @@ export default function ShiftCloser({ turnoActivo, exportCapabilities, onClosed 
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) return
-      const response = await fetch(`/api/exports/arqueo-turno-pdf?turnoId=${idTurno}`, { headers: { Authorization: `Bearer ${session.access_token}` } })
-      if (!response.ok) throw new Error()
+      const response = await fetch(`/api/exports/arqueo-turno-pdf?turnoId=${encodeURIComponent(idTurno)}`, { headers: { Authorization: `Bearer ${session.access_token}` } })
+      if (!response.ok) {
+        let message = 'No se pudo exportar el arqueo PDF.'
+        try {
+          const payload = await response.json() as { error?: string }
+          if (payload.error === 'shift_not_found') message = 'No se encontró el turno que querés exportar.'
+          else if (payload.error === 'forbidden') message = 'No tenés permiso para exportar este turno.'
+        } catch {
+          // Usamos el mensaje genérico.
+        }
+        throw new Error(message)
+      }
+      const contentType = response.headers.get('content-type') || ''
+      if (!contentType.includes('application/pdf')) throw new Error('El servidor no devolvió un PDF válido.')
       const blob = await response.blob()
+      if (blob.size === 0) throw new Error('El PDF generado está vacío.')
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
       a.download = `arqueo-turno-${idTurno.substring(0, 8)}.pdf`
       document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
-    } catch {
-      setMensaje({ tipo: 'error', texto: 'No se pudo exportar el arqueo PDF.' })
+    } catch (error) {
+      setMensaje({ tipo: 'error', texto: error instanceof Error ? error.message : 'No se pudo exportar el arqueo PDF.' })
     } finally { setExportingArqueoPdf(false) }
   }
 

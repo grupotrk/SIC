@@ -89,8 +89,8 @@ export default function AddEmployeeModal({
         return
       }
 
-      if (formData.contraseña.length < 6) {
-        setMensaje({ tipo: 'error', texto: 'La contraseña debe tener al menos 6 caracteres' })
+      if (formData.contraseña.length < 8 || formData.contraseña.length > 72) {
+        setMensaje({ tipo: 'error', texto: 'La contraseña debe tener entre 8 y 72 caracteres' })
         setLoading(false)
         return
       }
@@ -121,7 +121,7 @@ export default function AddEmployeeModal({
               errorData.error === 'invalid_username_format'
                 ? 'Usuario inválido (solo letras, 3-30 caracteres)'
                 : errorData.error === 'invalid_password'
-                  ? 'Contraseña muy corta (mín 6 caracteres)'
+                  ? 'Contraseña inválida (8-72 caracteres)'
                   : 'Error al crear empleado',
           })
         }
@@ -223,14 +223,17 @@ export default function AddEmployeeModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Contraseña (mín 6 caracteres)
+              Contraseña (8-72 caracteres)
             </label>
             <input
               type="password"
               name="contraseña"
               value={formData.contraseña}
               onChange={handleChange}
-              placeholder="••••••"
+              placeholder="8 caracteres o más"
+              minLength={8}
+              maxLength={72}
+              autoComplete="new-password"
               className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-emerald-600/50"
               disabled={loading}
             />

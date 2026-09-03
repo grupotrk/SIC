@@ -22,7 +22,7 @@ async function buildArqueoPdf(selectedDate: string, payload: {
   const font = await pdf.embedFont(StandardFonts.Helvetica)
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold)
 
-  page.drawText('Trikode SIC - Arqueo de Turno Personal', {
+  page.drawText('SIDEA SIC - Arqueo de Turno', {
     x: 40,
     y: 800,
     size: 18,
@@ -49,84 +49,79 @@ async function buildArqueoPdf(selectedDate: string, payload: {
     y -= 26
   }
 
-  page.drawText('Generado por Trikode SIC', { x: 40, y: 60, size: 9, font, color: rgb(0.4, 0.4, 0.4) })
-
+  page.drawText('Generado por SIDEA SIC', { x: 40, y: 60, size: 9, font, color: rgb(0.4, 0.4, 0.4) })
   return await pdf.save()
 }
 
 export async function GET(req: Request) {
   try {
     const accessToken = getBearerToken(req)
-    if (!accessToken) {
-      return NextResponse.json({ ok: false, error: 'missing_token' }, { status: 401 })
-    }
+    if (!accessToken) return NextResponse.json({ ok: false, error: 'missing_token' }, { status: 401 })
 
     const supabase = getSupabaseAdmin()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(accessToken)
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken)
+    if (authError || !user) return NextResponse.json({ ok: false, error: 'invalid_token' }, { status: 401 })
 
-    if (authError || !user) {
-      return NextResponse.json({ ok: false, error: 'invalid_token' }, { status: 401 })
-    }
+    const { data: comercioUsuario, error: roleError } = await supabase
+      .from('comercio_usuarios')
+      .select('id,tenant_id,rol,activo')
+      .eq('auth_user_id', user.id)
+      .eq('activo', true)
+      .maybeSingle()
 
-    const tenantId = (user.user_metadata?.tenant_id as string | undefined) || user.id
-
-    const superAdminRes = await supabase
+    const { data: superAdmin } = await supabase
       .from('super_admin_users')
       .select('activo')
       .eq('auth_user_id', user.id)
       .maybeSingle()
 
-    const isSuperAdmin = !superAdminRes.error && Boolean(superAdminRes.data?.activo)
-
-    const { data: comercioUsuario, error: roleError } = await supabase
-      .from('comercio_usuarios')
-      .select('id,rol,activo')
-      .eq('auth_user_id', user.id)
-      .eq('tenant_id', tenantId)
-      .single()
-
-    if (
-      roleError ||
-      !comercioUsuario ||
-      !comercioUsuario.activo ||
-      (comercioUsuario.rol !== 'EMPLOYEE' && comercioUsuario.rol !== 'OWNER' && !isSuperAdmin)
-    ) {
+    const isSuperAdmin = Boolean(superAdmin?.activo)
+    if ((roleError || !comercioUsuario) && !isSuperAdmin) {
       return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 })
     }
 
+    if (comercioUsuario && comercioUsuario.rol !== 'EMPLOYEE' && comercioUsuario.rol !== 'OWNER' && !isSuperAdmin) {
+      return NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 })
+    }
+
+    const fallbackTenant = user.user_metadata?.tenant_id as string | undefined
+    const tenantId = comercioUsuario?.tenant_id || fallbackTenant
+    if (!tenantId) return NextResponse.json({ ok: false, error: 'tenant_not_found' }, { status: 403 })
+
     const url = new URL(req.url)
+    const turnoId = url.searchParams.get('turnoId') || url.searchParams.get('turno_id')
     const dateParam = url.searchParams.get('date')
-    const selectedDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
-      ? dateParam
-      : new Date().toISOString().slice(0, 10)
 
-    const { data: turno, error: turnoError } = await supabase
+    let turnoQuery = supabase
       .from('turnos')
-      .select('id')
+      .select('id,fecha_operativa,comercio_usuario_id')
       .eq('tenant_id', tenantId)
-      .eq('comercio_usuario_id', comercioUsuario.id)
-      .eq('fecha_operativa', selectedDate)
-      .order('abierto_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
 
+    if (turnoId) {
+      turnoQuery = turnoQuery.eq('id', turnoId)
+    } else {
+      const selectedDate = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+        ? dateParam
+        : new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
+      turnoQuery = turnoQuery.eq('fecha_operativa', selectedDate).order('abierto_at', { ascending: false }).limit(1)
+    }
+
+    if (comercioUsuario?.rol === 'EMPLOYEE') {
+      turnoQuery = turnoQuery.eq('comercio_usuario_id', comercioUsuario.id)
+    }
+
+    const { data: turno, error: turnoError } = await turnoQuery.maybeSingle()
     if (turnoError || !turno) {
-      return NextResponse.json({ ok: false, error: 'no_shift_for_date' }, { status: 404 })
+      return NextResponse.json({ ok: false, error: 'shift_not_found' }, { status: 404 })
     }
 
     const { data: ventas, error: ventasError } = await supabase
       .from('ventas')
       .select('estado,metodo_pago,total')
       .eq('tenant_id', tenantId)
-      .eq('comercio_usuario_id', comercioUsuario.id)
       .eq('turno_id', turno.id)
 
-    if (ventasError) {
-      return NextResponse.json({ ok: false, error: 'db_error' }, { status: 500 })
-    }
+    if (ventasError) return NextResponse.json({ ok: false, error: 'db_error' }, { status: 500 })
 
     const summary = (ventas || []).reduce(
       (acc, v) => {
@@ -140,24 +135,12 @@ export async function GET(req: Request) {
         if (v.metodo_pago === 'MERCADO_PAGO' || v.metodo_pago === 'BILLETERA' || v.metodo_pago === 'QR') acc.totalMercadoPago += total
         return acc
       },
-      {
-        ventasCompletadas: 0,
-        totalVendido: 0,
-        totalEfectivo: 0,
-        totalTarjeta: 0,
-        totalTransferencia: 0,
-        totalMercadoPago: 0,
-      }
+      { ventasCompletadas: 0, totalVendido: 0, totalEfectivo: 0, totalTarjeta: 0, totalTransferencia: 0, totalMercadoPago: 0 }
     )
 
-    const bytes = await buildArqueoPdf(selectedDate, {
-      turnoId: turno.id,
-      ...summary,
-    })
-    const pdfBuffer = bytes.buffer.slice(
-      bytes.byteOffset,
-      bytes.byteOffset + bytes.byteLength
-    ) as ArrayBuffer
+    const selectedDate = String(turno.fecha_operativa)
+    const bytes = await buildArqueoPdf(selectedDate, { turnoId: turno.id, ...summary })
+    const pdfBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer
 
     return new NextResponse(pdfBuffer, {
       status: 200,
@@ -167,7 +150,8 @@ export async function GET(req: Request) {
         'Cache-Control': 'no-store',
       },
     })
-  } catch {
+  } catch (error) {
+    console.error('Error exportando arqueo PDF:', error)
     return NextResponse.json({ ok: false, error: 'unexpected' }, { status: 500 })
   }
 }

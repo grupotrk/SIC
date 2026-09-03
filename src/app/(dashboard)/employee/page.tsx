@@ -145,12 +145,22 @@ export default function EmployeePage() {
       if (!session?.access_token) return
 
       const today = new Date().toISOString().slice(0, 10)
-      const response = await fetch(`/api/exports/arqueo-turno-pdf?date=${today}`, {
+      if (!turnoActivo?.id) return
+      const response = await fetch(`/api/exports/arqueo-turno-pdf?turnoId=${encodeURIComponent(turnoActivo.id)}`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
 
-      if (!response.ok) return
+      if (!response.ok) {
+        console.error('Error exportando arqueo PDF:', response.status, await response.text())
+        return
+      }
+
+      const contentType = response.headers.get('content-type') || ''
+      if (!contentType.includes('application/pdf')) {
+        console.error('La exportación no devolvió un PDF válido.')
+        return
+      }
 
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)

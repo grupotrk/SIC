@@ -90,7 +90,7 @@ export default function DashboardStats({ subscription }: Props) {
         setEmpleados(empleadosData as EmpleadoEnVivo[])
       }
 
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
       const { data: resumenData, error: resError } = await supabase
         .from('resumen_cierre_diario')
         .select('*')
@@ -172,7 +172,7 @@ export default function DashboardStats({ subscription }: Props) {
         return
       }
 
-      const today = new Date().toISOString().split('T')[0]
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
       const res = await fetch('/api/owner/close-day', {
         method: 'POST',
         headers: {
@@ -211,18 +211,36 @@ export default function DashboardStats({ subscription }: Props) {
         return
       }
 
-      const today = new Date().toISOString().slice(0, 10)
+      const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
       const response = await fetch(`/api/exports/resumen-diario-pdf?date=${today}`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
 
       if (!response.ok) {
-        setMensaje({ tipo: 'error', texto: 'No se pudo exportar el resumen diario en PDF.' })
+        let detalle = ''
+        try {
+          const payload = await response.json() as { error?: string }
+          if (payload.error === 'no_data_for_date') detalle = ' No hay movimientos para la fecha operativa actual.'
+          else if (payload.error === 'forbidden') detalle = ' Tu sesión no tiene permiso para exportar este comercio.'
+        } catch {
+          // La respuesta puede no ser JSON; usamos el mensaje genérico.
+        }
+        setMensaje({ tipo: 'error', texto: `No se pudo exportar el resumen diario en PDF.${detalle}` })
+        return
+      }
+
+      const contentType = response.headers.get('content-type') || ''
+      if (!contentType.includes('application/pdf')) {
+        setMensaje({ tipo: 'error', texto: 'El servidor no devolvió un PDF válido.' })
         return
       }
 
       const blob = await response.blob()
+      if (blob.size === 0) {
+        setMensaje({ tipo: 'error', texto: 'El PDF generado está vacío.' })
+        return
+      }
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

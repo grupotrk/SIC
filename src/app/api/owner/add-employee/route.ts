@@ -114,7 +114,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       )
     }
 
-    if (!contraseña || contraseña.length < 6) {
+    if (!contraseña || contraseña.length < 8 || contraseña.length > 72) {
       return NextResponse.json(
         { success: false, error: 'invalid_password' },
         { status: 400 }

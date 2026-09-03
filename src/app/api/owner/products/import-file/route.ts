@@ -64,7 +64,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const inserts: Record<string, unknown>[] = []
     const updates: Array<{ id: string; data: Record<string, unknown> }> = []
-    let skipped = rows.length - cleanRows.length
+    const skipped = rows.length - cleanRows.length
 
     for (const row of cleanRows) {
       const barcode = String(row.codigo_barras ?? '').trim()
