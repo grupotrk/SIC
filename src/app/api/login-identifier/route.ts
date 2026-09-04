@@ -12,7 +12,7 @@ type ComercioUsuarioRow = {
 }
 
 const OWNER_USERNAME_REGEX = /^[a-zA-Z0-9]{4,40}$/
-const EMPLOYEE_USERNAME_REGEX = /^[a-zA-Z]{3,30}$/
+const EMPLOYEE_USERNAME_REGEX = /^[a-zA-Z0-9._-]{3,30}$/
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function normalizeIdentifier(value: string): string {
@@ -48,11 +48,29 @@ export async function POST(req: Request) {
       }
     }
 
+    const supabase = getSupabaseAdmin()
+
+    // Las cuentas internas SUPERADMIN nunca deben resolverse como credenciales
+    // operativas OWNER/EMPLOYEE. Esto corta el acceso antes de autenticar.
+    if (EMAIL_REGEX.test(identifier)) {
+      const superAdminRes = await supabase
+        .from('super_admin_users')
+        .select('id,activo')
+        .ilike('email', identifier)
+        .maybeSingle()
+
+      if (superAdminRes.error) {
+        return NextResponse.json({ ok: false, error: 'db_error' }, { status: 500 })
+      }
+
+      if (superAdminRes.data?.activo) {
+        return NextResponse.json({ ok: false, error: 'superadmin_account' }, { status: 403 })
+      }
+    }
+
     if (role === 'OWNER' && EMAIL_REGEX.test(identifier)) {
       return NextResponse.json({ ok: true, email: identifier }, { status: 200 })
     }
-
-    const supabase = getSupabaseAdmin()
     const byUsernameRes = await supabase
       .from('comercio_usuarios')
       .select('email,nombre,rol,activo,metadata')

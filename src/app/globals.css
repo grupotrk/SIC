@@ -390,6 +390,10 @@ html[data-theme='dark'] .app-section-card { box-shadow: 0 1px 2px rgba(0,0,0,.16
 .login-secondary-actions { display:flex; justify-content:center; gap:18px; margin-top:20px; }
 .login-secondary-actions a { color:#728095; font-size:10px; font-weight:650; text-decoration:none; }
 .login-secondary-actions a:hover { color:#0f8196; }
+.login-admin-access { display:flex; justify-content:center; margin-top:16px; padding-top:14px; border-top:1px solid #e2e7ed; }
+.login-admin-access a { display:inline-flex; align-items:center; gap:7px; color:#7b8796; font-size:10px; font-weight:700; text-decoration:none; transition:.15s; }
+.login-admin-access a:hover { color:#2563eb; }
+.login-admin-access svg { width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .login-trust { margin-top:28px; padding-top:16px; border-top:1px solid #e2e7ed; display:flex; align-items:center; gap:7px; color:#97a2af; font-size:9px; }
 
 @media(max-width:1100px){
@@ -428,6 +432,9 @@ html[data-theme='dark'] .login-field input:focus { border-color:#38c5d6; }
 html[data-theme='dark'] .login-submit { background:#17889d; }
 html[data-theme='dark'] .login-submit:hover { background:#1c99af; }
 html[data-theme='dark'] .login-secondary-actions a { color:#7e90a6; }
+html[data-theme='dark'] .login-admin-access { border-top-color:#253449; }
+html[data-theme='dark'] .login-admin-access a { color:#7e90a6; }
+html[data-theme='dark'] .login-admin-access a:hover { color:#60a5fa; }
 html[data-theme='dark'] .login-trust { border-color:#223043; color:#61748b; }
 html[data-theme='dark'] .login-theme .theme-toggle { color:#a8b6c6; background:#111b28; border-color:#263447; }
 html[data-theme='dark'] .login-error { border-color:#66313a; background:#2a171c; color:#ff9ba6; }

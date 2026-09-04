@@ -22,7 +22,7 @@ interface ResponseError {
 }
 
 // Validar formato de username para EMPLOYEE
-const EMPLOYEE_USERNAME_REGEX = /^[a-zA-Z]{3,30}$/
+const EMPLOYEE_USERNAME_REGEX = /^[a-zA-Z0-9._-]{3,30}$/
 
 // Función para buscar si username existe globalmente
 async function usernameTaken(username: string): Promise<boolean> {

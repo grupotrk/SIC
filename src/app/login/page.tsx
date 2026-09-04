@@ -13,8 +13,8 @@ type LoginRole = 'OWNER' | 'EMPLOYEE'
 
 const OWNER_USERNAME_OR_EMAIL_REGEX = /^(?:[a-zA-Z0-9]{4,40}|[^\s@]+@[^\s@]+\.[^\s@]+)$/
 const OWNER_PASSWORD_REGEX = /^.{6,64}$/
-const EMPLOYEE_USERNAME_REGEX = /^[a-zA-Z]{3,30}$/
-const EMPLOYEE_PIN_REGEX = /^[A-Za-z0-9]{4,6}$/
+const EMPLOYEE_USERNAME_REGEX = /^[a-zA-Z0-9._-]{3,30}$/
+const EMPLOYEE_PASSWORD_REGEX = /^.{8,72}$/
 
 export default function LoginPage() {
   const router = useRouter()
@@ -29,8 +29,8 @@ export default function LoginPage() {
 
   const resolveEmailForRole = async (role: LoginRole, rawIdentifier: string): Promise<string | null> => {
     const normalizedIdentifier = rawIdentifier.trim().toLowerCase()
-    if (role === 'OWNER' && normalizedIdentifier.includes('@')) return normalizedIdentifier
-
+    // Siempre pasa por el resolver server-side, incluso cuando Dueño usa email.
+    // Así una cuenta SUPERADMIN no puede saltarse el control por usar su email directo.
     const response = await fetch('/api/login-identifier', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -40,11 +40,19 @@ export default function LoginPage() {
 
     if (!response.ok || !payload?.ok || !payload.email) {
       if (payload?.error === 'ambiguous_user') setError('Hay más de un usuario con ese identificador. Contactá al administrador.')
+      else if (payload?.error === 'superadmin_account') setError('Esta cuenta es de administración SIDEA. Ingresá desde el acceso de Superadmin.')
       else if (payload?.error === 'not_found') setError('No encontramos ese usuario para el perfil seleccionado.')
       else setError('No se pudo resolver el usuario. Revisá los datos e intentá de nuevo.')
       return null
     }
     return payload.email
+  }
+
+  const clearOperationalSession = async () => {
+    // Las cookies de sesión SIC son HttpOnly: supabase.auth.signOut() no puede borrarlas.
+    // Limpiarlas explícitamente evita que una sesión OWNER anterior sobreviva a un login rechazado.
+    await fetch('/api/logout', { method: 'POST' }).catch(() => null)
+    await supabase.auth.signOut().catch(() => null)
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -70,11 +78,11 @@ export default function LoginPage() {
         }
       } else {
         if (!EMPLOYEE_USERNAME_REGEX.test(normalizedIdentifier)) {
-          setError('Para Empleado, el usuario debe contener solo letras.')
+          setError('Para Empleado, usá entre 3 y 30 caracteres: letras, números, punto, guion o guion bajo.')
           return
         }
-        if (!EMPLOYEE_PIN_REGEX.test(password)) {
-          setError('El PIN del Empleado debe tener entre 4 y 6 caracteres alfanuméricos.')
+        if (!EMPLOYEE_PASSWORD_REGEX.test(password)) {
+          setError('La contraseña del Empleado debe tener entre 8 y 72 caracteres.')
           return
         }
       }
@@ -98,18 +106,37 @@ export default function LoginPage() {
 
       const roleSessionRes = await fetch('/api/session-role', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${data.session.access_token}` },
+        headers: { Authorization: `Bearer ${data.session.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestedRole: loginRole }),
       })
       if (!roleSessionRes.ok) {
         const errorPayload = (await roleSessionRes.json().catch(() => null)) as { ok?: boolean; error?: string } | null
-        setError(errorPayload?.error === 'role_not_configured' ? 'Cuenta no configurada. Contactá al administrador.' : 'No se pudo validar la sesión. Intentá nuevamente.')
+        await clearOperationalSession()
+        if (errorPayload?.error === 'superadmin_account') setError('Esta cuenta es de administración SIDEA. Ingresá desde el acceso de Superadmin.')
+        else if (errorPayload?.error === 'role_mismatch') setError('Esta cuenta no corresponde al perfil seleccionado.')
+        else if (errorPayload?.error === 'role_not_configured') setError('Cuenta no configurada. Contactá al administrador.')
+        else setError('No se pudo validar la sesión. Intentá nuevamente.')
         return
       }
 
       const rolePayload = (await roleSessionRes.json().catch(() => null)) as { ok?: boolean; role?: AppRole } | null
       const role = rolePayload?.role
       if (!role) {
+        await clearOperationalSession()
         setError('No se pudo resolver el rol de la sesión.')
+        return
+      }
+
+      // El perfil elegido en el login debe coincidir con el rol real de la cuenta.
+      // Esto evita, por ejemplo, que un SUPERADMIN autentique desde el acceso de Dueño
+      // y alcance una pantalla operativa sin pertenecer a un comercio.
+      if (role !== loginRole) {
+        await clearOperationalSession()
+        setError(
+          role === 'SUPERADMIN'
+            ? 'Esta cuenta es de administración SIDEA. Ingresá desde el acceso de Superadmin.'
+            : `Esta cuenta no tiene acceso como ${loginRole === 'OWNER' ? 'Dueño' : 'Empleado'}.`
+        )
         return
       }
 
@@ -166,8 +193,8 @@ export default function LoginPage() {
             </label>
 
             <label className="login-field">
-              <span>{loginRole === 'EMPLOYEE' ? 'PIN' : 'Contraseña'}</span>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={loginRole === 'EMPLOYEE' ? '4 a 6 caracteres' : 'Tu contraseña'} disabled={loading} autoComplete="current-password" />
+              <span>Contraseña</span>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={loginRole === 'EMPLOYEE' ? '8 caracteres o más' : 'Tu contraseña'} disabled={loading} autoComplete="current-password" />
             </label>
 
             <button type="submit" disabled={loading} className="login-submit">
@@ -179,6 +206,16 @@ export default function LoginPage() {
           <div className="login-secondary-actions">
             <a href="/demo-comercio.html">Ver demo</a>
             <a href="/landing.html">Volver al sitio</a>
+          </div>
+
+          <div className="login-admin-access">
+            <a href="/admin" aria-label="Acceso de administración SIDEA">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3 5 6v5c0 4.6 2.9 8.4 7 10 4.1-1.6 7-5.4 7-10V6l-7-3Z" />
+                <path d="M9.5 12.2 11.2 14l3.6-4" />
+              </svg>
+              <span>Acceso de administración</span>
+            </a>
           </div>
 
           <div className="login-trust"><span className="status-dot" />Conexión protegida · SIDEA Ingeniería</div>

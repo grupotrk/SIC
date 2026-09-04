@@ -62,6 +62,11 @@ export async function POST(req: Request) {
       )
     }
 
+    const body = (await req.json().catch(() => null)) as { requestedRole?: unknown } | null
+    const requestedRole = body?.requestedRole === 'OWNER' || body?.requestedRole === 'EMPLOYEE'
+      ? body.requestedRole
+      : null
+
     const supabase = getSupabaseAdmin()
 
     const tenantId = user.user_metadata?.tenant_id as string | undefined
@@ -130,6 +135,16 @@ export async function POST(req: Request) {
     const role: AppRole = isSuperAdmin ? 'SUPERADMIN' : comercioUsuario!.rol
     if (!isAppRole(role)) {
       return NextResponse.json({ ok: false, error: 'invalid_role' }, { status: 403 })
+    }
+
+    // Defensa server-side: el login operativo declara qué perfil pidió el usuario.
+    // Una cuenta SUPERADMIN (o cualquier rol distinto) no puede obtener cookies
+    // de sesión para OWNER/EMPLOYEE aunque Supabase haya autenticado la clave.
+    if (requestedRole && role !== requestedRole) {
+      return NextResponse.json(
+        { ok: false, error: role === 'SUPERADMIN' ? 'superadmin_account' : 'role_mismatch', role },
+        { status: 403 }
+      )
     }
 
     const profile = comercioUsuario

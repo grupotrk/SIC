@@ -80,10 +80,10 @@ export default function AddEmployeeModal({
         return
       }
 
-      if (!/^[a-zA-Z]{3,30}$/.test(formData.usuarioPropuesto)) {
+      if (!/^[a-zA-Z0-9._-]{3,30}$/.test(formData.usuarioPropuesto)) {
         setMensaje({
           tipo: 'error',
-          texto: 'Usuario debe contener solo letras (3-30 caracteres)',
+          texto: 'Usuario inválido. Usá 3-30 caracteres: letras, números, punto, guion o guion bajo',
         })
         setLoading(false)
         return
@@ -119,7 +119,7 @@ export default function AddEmployeeModal({
             tipo: 'error',
             texto:
               errorData.error === 'invalid_username_format'
-                ? 'Usuario inválido (solo letras, 3-30 caracteres)'
+                ? 'Usuario inválido (3-30 caracteres: letras, números, ., _ o -)'
                 : errorData.error === 'invalid_password'
                   ? 'Contraseña inválida (8-72 caracteres)'
                   : 'Error al crear empleado',
@@ -208,14 +208,14 @@ export default function AddEmployeeModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Usuario (solo letras, 3-30 caracteres)
+              Usuario (3-30 caracteres: letras, números, ., _ o -)
             </label>
             <input
               type="text"
               name="usuarioPropuesto"
               value={formData.usuarioPropuesto}
               onChange={handleChange}
-              placeholder="juan"
+              placeholder="juan84"
               className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-emerald-600/50"
               disabled={loading}
             />
